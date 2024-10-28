@@ -2,10 +2,14 @@ package hmw.ecommerce.entity;
 
 import hmw.ecommerce.entity.vo.Address;
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Getter
+@Builder
 public class Member extends BaseEntity{
 
     @Id
@@ -19,5 +23,7 @@ public class Member extends BaseEntity{
 
     @Embedded
     private Address address;
+
+    private String role;
 
 }

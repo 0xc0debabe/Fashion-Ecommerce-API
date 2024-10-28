@@ -2,6 +2,9 @@ spring:
   profiles:
     active: local
 
+  jwt:
+    secret: secretKey
+
   datasource:
     url: jdbc:mysql://localhost:3306/fashionDB
     username: fashion

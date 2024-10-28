@@ -8,7 +8,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Getter
 @Table(name = "orders")
 public class Order extends BaseEntity {
 
