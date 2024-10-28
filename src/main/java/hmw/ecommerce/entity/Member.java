@@ -2,12 +2,14 @@ package hmw.ecommerce.entity;
 
 import hmw.ecommerce.entity.vo.Address;
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
 @Getter
-@Setter
+@Builder
 public class Member extends BaseEntity{
 
     @Id
