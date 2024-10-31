@@ -54,15 +54,13 @@ class MemberControllerTest {
     void signUp_success() throws Exception{
         //given
         given(memberService.signUp(any()))
-                .willReturn(formResponse);
+                .willReturn("인증 이메일을 성공적으로 보냈습니다. 메일을 확인하고 인증 코드를 입력하세요.");
 
         //when //then
-        mockMvc.perform(post("/signUp")
+        mockMvc.perform(post("/member/signUp")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(formRequest)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.username").value("name"))
-                .andExpect(jsonPath("$.email").value("email@naver.com"));
+                .andExpect(status().isOk());
      }
 
      @Test
@@ -72,7 +70,7 @@ class MemberControllerTest {
          //when
 
          //then
-         mockMvc.perform(post("/signUp")
+         mockMvc.perform(post("/member/signUp")
                          .contentType(MediaType.APPLICATION_JSON)
                          .content(objectMapper.writeValueAsString(SignUpForm.Request.builder()
                                          .username(null)

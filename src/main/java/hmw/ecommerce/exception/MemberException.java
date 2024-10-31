@@ -1,14 +1,13 @@
 package hmw.ecommerce.exception;
 
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 @Getter
-public class CustomException extends RuntimeException {
+public class MemberException extends RuntimeException{
 
     private final ErrorCode errorCode;
 
-    public CustomException(ErrorCode errorCode) {
+    public MemberException(ErrorCode errorCode) {
         super(errorCode.getDescription());
         this.errorCode = errorCode;
     }
