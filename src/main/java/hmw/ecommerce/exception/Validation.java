@@ -10,8 +10,8 @@ import java.util.stream.Collectors;
 public class Validation {
 
     public static ResponseEntity<List<String>> validateDtoErrors(BindingResult bindingResult) {
-        List<String> errorMessages = bindingResult.getAllErrors().stream()
-                .map(DefaultMessageSourceResolvable::getDefaultMessage)
+        List<String> errorMessages = bindingResult.getFieldErrors().stream()
+                .map(error -> error.getField() + " : " + error.getDefaultMessage())
                 .collect(Collectors.toList());
         return ResponseEntity.badRequest().body(errorMessages);
     }

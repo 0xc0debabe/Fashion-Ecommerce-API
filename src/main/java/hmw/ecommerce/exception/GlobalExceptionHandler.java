@@ -9,7 +9,12 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(MemberException.class)
-    public ResponseEntity<String> handleCustomException(MemberException ex) {
+    public ResponseEntity<String> handleMemberException(MemberException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(EmailException.class)
+    public ResponseEntity<String> handleEmailException(EmailException ex) {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
 }
