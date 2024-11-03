@@ -21,9 +21,7 @@ public class MemberController {
     public ResponseEntity<?> signUp(
             @Valid @RequestBody SignUpForm.Request request,
             BindingResult bindingResult) {
-        if (bindingResult.hasErrors()) {
-            return Validation.validateDtoErrors(bindingResult);
-        }
+
 
         return ResponseEntity.ok(memberService.signUp(request));
     }
@@ -42,10 +40,6 @@ public class MemberController {
             @RequestParam(name = "code") String code,
             @PathVariable(name = "memberId") Long memberId,
             BindingResult bindingResult) {
-
-        if (bindingResult.hasErrors()) {
-            return Validation.validateDtoErrors(bindingResult);
-        }
 
         return ResponseEntity.ok(memberService.verifyEmail(signUpVerificationDto.getEmail(), code, memberId));
     }

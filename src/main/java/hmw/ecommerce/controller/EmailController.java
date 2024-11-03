@@ -21,10 +21,6 @@ public class EmailController {
             @Valid @RequestBody SignUpVerificationDto verificationDto,
             BindingResult bindingResult) {
 
-        if (bindingResult.hasErrors()) {
-            return Validation.validateDtoErrors(bindingResult);
-        }
-
         return ResponseEntity.ok(emailService.sendEmail(verificationDto.getEmail()));
     }
 
