@@ -13,11 +13,8 @@ import lombok.NoArgsConstructor;
 public class Address {
 
 
-    @NotEmpty
     private String city;
-    @NotEmpty
     private String street;
-    @NotEmpty
     private String zipcode;
 
 }

@@ -6,6 +6,7 @@ import hmw.ecommerce.jwt.LoginFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -49,13 +50,18 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests((auth) -> auth
                         .requestMatchers(
-                                "/member/signUp",
-                                "/member/duplicateCheck",
+                                "/member",
+                                "/member/duplicate-check",
+                                "/brand",
                                 "/",
+                                "/member/login").permitAll()
+                        .requestMatchers(
                                 "/member/verify/*",
-                                "/member/login",
-                                "/email/send-code").permitAll()
-                        .requestMatchers("/test").hasRole("MEMBER")
+                                "/email").hasAnyRole("MEMBER", "SELLER")
+                        .requestMatchers(HttpMethod.POST,
+                                "/item").hasRole("SELLER")
+//                        .requestMatchers(HttpMethod.GET,
+//                                "/item/*").hasRole("SELLER")
                         .anyRequest().authenticated());
 
         http

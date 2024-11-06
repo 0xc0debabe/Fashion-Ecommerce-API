@@ -1,10 +1,12 @@
 package hmw.ecommerce.entity;
 
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 
 @Entity
 @Getter
+@Builder
 public class ItemCategory extends BaseEntity{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

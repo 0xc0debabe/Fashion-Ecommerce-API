@@ -3,6 +3,7 @@ package hmw.ecommerce.controller;
 import hmw.ecommerce.entity.dto.SignUpVerificationDto;
 import hmw.ecommerce.exception.Validation;
 import hmw.ecommerce.service.EmailService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +17,7 @@ public class EmailController {
 
     private final EmailService emailService;
 
-    @PostMapping("send-code")
+    @PostMapping
     public ResponseEntity<?> sendVerificationCode(
             @Valid @RequestBody SignUpVerificationDto verificationDto,
             BindingResult bindingResult) {

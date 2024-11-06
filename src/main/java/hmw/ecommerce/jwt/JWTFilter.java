@@ -2,6 +2,7 @@ package hmw.ecommerce.jwt;
 
 import hmw.ecommerce.entity.Member;
 import hmw.ecommerce.entity.dto.CustomUserDetails;
+import hmw.ecommerce.entity.vo.ConstJWT;
 import hmw.ecommerce.exception.ErrorCode;
 import hmw.ecommerce.exception.MemberException;
 import jakarta.servlet.FilterChain;
@@ -25,10 +26,9 @@ public class JWTFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        String authorization = request.getHeader("Authorization");
-        log.info("authorization={}", authorization);
+        String authorization = request.getHeader(ConstJWT.AUTHORIZATION);
 
-        if (authorization == null || !authorization.startsWith("Bearer ")) {
+        if (authorization == null || !authorization.startsWith(ConstJWT.BEARER)) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -37,7 +37,7 @@ public class JWTFilter extends OncePerRequestFilter {
 
         if (jwtUtil.isExpired(token)) {
             filterChain.doFilter(request, response);
-            return;
+            throw new MemberException(ErrorCode.SESSION_EXPIRED);
         }
 
         String findLoginId = jwtUtil.getLoginId(token);

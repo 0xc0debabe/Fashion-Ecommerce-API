@@ -2,7 +2,6 @@ package hmw.ecommerce.entity;
 
 import hmw.ecommerce.entity.vo.Address;
 import jakarta.persistence.*;
-import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -23,6 +22,8 @@ public class Member extends BaseEntity{
     private String loginId;
     private String password;
     private String username;
+    private String phone;
+    private String nickName;
 
     private String email;
     private boolean isVerified;
@@ -30,9 +31,13 @@ public class Member extends BaseEntity{
     @Embedded
     private Address address;
 
+    private boolean seller;
+
     private String role;
 
-    public void verifySuccess() {
+    public void verifySuccess(String email) {
         this.isVerified = true;
+        this.email = email;
     }
+
 }

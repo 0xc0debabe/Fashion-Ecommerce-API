@@ -6,9 +6,11 @@ import hmw.ecommerce.exception.EmailException;
 import hmw.ecommerce.exception.ErrorCode;
 import hmw.ecommerce.exception.MemberException;
 import hmw.ecommerce.repository.MemberRepository;
+import jakarta.validation.constraints.Email;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,22 +24,25 @@ public class MemberService {
 
     private final MemberRepository memberRepository;
     private final RedisTemplate<String, Object> redisTemplate;
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
     public SignUpForm.Response signUp(SignUpForm.Request request) {
         if (memberRepository.existsByLoginId(request.getLoginId())) {
             throw new MemberException(ErrorCode.ALREADY_EXIST_LOGIN_ID);
         }
 
-        return SignUpForm.Response.fromEntity(
-                memberRepository.save(request.toEntity())
-        );
+        request.setPassword(bCryptPasswordEncoder.encode(request.getPassword()));
+        return SignUpForm.Response.fromEntity(memberRepository.save(request.toEntity(request.isSeller())));
     }
 
     public boolean duplicateCheckLoginId(String loginId) {
         return memberRepository.existsByLoginId(loginId);
     }
 
-    public String verifyEmail(String email, String code, Long memberId) {
+    public SignUpForm.Response verifyEmail(String email, String code, String loginId) {
+        Member findMember = memberRepository.findByLoginId(loginId)
+                .orElseThrow(() -> new MemberException(ErrorCode.INVALID_ACCESS));
+
         if (Boolean.FALSE.equals(redisTemplate.hasKey(email))) {
             throw new EmailException(ErrorCode.NOT_EXIST_EMAIL);
         }
@@ -46,12 +51,17 @@ public class MemberService {
             throw new MemberException(ErrorCode.INVALID_CODE);
         }
 
-        Member findMember = memberRepository.findById(memberId)
-                .orElseThrow(() -> new MemberException(ErrorCode.NOT_EXIST_EMAIL));
-        findMember.verifySuccess();
-        redisTemplate.delete(email);
+        findMember.verifySuccess(email);
+        redisTemplate.delete(findMember.getEmail());
 
-        return email;
+        return SignUpForm.Response.fromEntity(findMember);
+    }
+
+    public boolean matchesLoginIdAndPassword(String loginId, String password) {
+        Member findMember = memberRepository.findByLoginId(loginId).orElseThrow(
+                () -> new MemberException(ErrorCode.NOT_EXIST_LOGIN_ID));
+
+        return bCryptPasswordEncoder.matches(findMember.getPassword(), password);
     }
 
 }

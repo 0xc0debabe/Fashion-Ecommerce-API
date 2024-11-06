@@ -7,12 +7,14 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class EmailService {
 
     private final JavaMailSender mailSender;

@@ -19,7 +19,7 @@ spring:
             enable: true
 
   jwt:
-    secret: secretKey
+    secret: "a6d9b8e1c5f7a4d3e2b6c8f9g0h1i2j3k4l5m6n7o8p9q0r1s2t3u4v5w6x7y8z9"
 
   datasource:
     url: jdbc:mysql://localhost:3306/fashionDB
@@ -28,7 +28,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     properties:
       hibernate:
         format_sql: true
