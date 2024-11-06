@@ -3,17 +3,24 @@ package hmw.ecommerce.config;
 import hmw.ecommerce.jwt.JWTFilter;
 import hmw.ecommerce.jwt.JWTUtil;
 import hmw.ecommerce.jwt.LoginFilter;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
@@ -22,6 +29,7 @@ public class SecurityConfig {
 
     private final AuthenticationConfiguration authenticationConfiguration;
     private final JWTUtil jwtUtil;
+    private final RedisTemplate<String, Object> redisTemplate;
 
     @Bean
     public BCryptPasswordEncoder bCryptPasswordEncoder() {
@@ -31,6 +39,24 @@ public class SecurityConfig {
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
         return configuration.getAuthenticationManager();
+    }
+
+    @Bean
+    public AuthenticationEntryPoint customAuthenticationEntryPoint() {
+        return (HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) -> {
+            response.setStatus(HttpStatus.UNAUTHORIZED.value());
+            response.setCharacterEncoding("UTF-8");
+            response.getWriter().write("인증이 필요합니다.");
+        };
+    }
+
+    @Bean
+    public AccessDeniedHandler customAccessDeniedHandler() {
+        return (request, response, accessDeniedException) -> {
+            response.setStatus(HttpStatus.FORBIDDEN.value());
+            response.setCharacterEncoding("UTF-8");
+            response.getWriter().write("접근 권한이 없습니다.");
+        };
     }
 
     @Bean
@@ -57,6 +83,7 @@ public class SecurityConfig {
                                 "/member/login").permitAll()
                         .requestMatchers(
                                 "/member/verify/*",
+                                "/member/logout",
                                 "/email").hasAnyRole("MEMBER", "SELLER")
                         .requestMatchers(HttpMethod.POST,
                                 "/item").hasRole("SELLER")
@@ -64,8 +91,11 @@ public class SecurityConfig {
 //                                "/item/*").hasRole("SELLER")
                         .anyRequest().authenticated());
 
+        http.exceptionHandling(e -> e.authenticationEntryPoint(customAuthenticationEntryPoint())
+                .accessDeniedHandler(customAccessDeniedHandler()));
+
         http
-                .addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class);
+                .addFilterBefore(new JWTFilter(jwtUtil, redisTemplate), LoginFilter.class);
 
         http
                 .addFilterAt(loginFilter, UsernamePasswordAuthenticationFilter.class);

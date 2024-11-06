@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import hmw.ecommerce.entity.dto.CustomUserDetails;
 import hmw.ecommerce.entity.dto.LoginForm;
 import hmw.ecommerce.entity.vo.ConstJWT;
+import hmw.ecommerce.exception.AuthException;
 import hmw.ecommerce.exception.ErrorCode;
 import hmw.ecommerce.exception.MemberException;
 import hmw.ecommerce.exception.ParseException;
@@ -15,6 +16,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -26,6 +28,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -61,7 +64,9 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         Iterator<? extends GrantedAuthority> iterator = authorities.iterator();
         GrantedAuthority auth = iterator.next();
         String role = auth.getAuthority();
-        String token = jwtUtil.createJwt(loginId, role, 60 * 60 * 24L * 1000);
+        String token = jwtUtil.createJwt(loginId, role, 1L);
+//        60 * 60 * 24L * 1000
+
         response.addHeader(ConstJWT.AUTHORIZATION, ConstJWT.BEARER + token);
         response.setContentType("application/json;charset=UTF-8");
         response.getWriter().write(loginId + " : 로그인 성공");
@@ -69,6 +74,9 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
     @Override
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException, ServletException {
-        response.setStatus(401);
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType("application/json;charset=UTF-8");
+        response.getWriter().write("아이디와 패스워드가 일치하지 않습니다.");
     }
+
 }

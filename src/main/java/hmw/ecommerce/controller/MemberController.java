@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.*;
 public class MemberController {
 
     private final MemberService memberService;
-    private final JWTUtil jwtUtil;
 
     @PostMapping
     public ResponseEntity<?> signUp(
@@ -43,17 +42,23 @@ public class MemberController {
             @Valid @RequestBody SignUpVerificationDto signUpVerificationDto,
             BindingResult bindingResult,
             @RequestParam(name = "code") String code,
-            HttpServletRequest request) {
+            @RequestHeader(ConstJWT.AUTHORIZATION) String token) {
+        if (token == null || !token.startsWith(ConstJWT.BEARER)) {
+            throw new MemberException(ErrorCode.INVALID_ACCESS);
+        }
+        String jwtToken = token.replace(ConstJWT.BEARER, "");
+        return ResponseEntity.ok(memberService.verifyEmail(signUpVerificationDto.getEmail(), code, jwtToken));
+    }
 
-        String jwtToken = request.getHeader(ConstJWT.AUTHORIZATION);
-        if (jwtToken == null || !jwtToken.startsWith(ConstJWT.BEARER)) {
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(@RequestHeader(ConstJWT.AUTHORIZATION) String token) {
+
+        if (token == null || !token.startsWith(ConstJWT.BEARER)) {
             throw new MemberException(ErrorCode.INVALID_ACCESS);
         }
 
-        String token = jwtToken.replace(ConstJWT.BEARER, "");
-        String loginId = jwtUtil.getLoginId(token);
-
-        return ResponseEntity.ok(memberService.verifyEmail(signUpVerificationDto.getEmail(), code, loginId));
+        String jwtToken = token.replace(ConstJWT.BEARER, "");
+        return ResponseEntity.ok(memberService.logout(jwtToken));
     }
 
 }

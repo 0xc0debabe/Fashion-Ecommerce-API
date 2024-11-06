@@ -5,8 +5,8 @@ import hmw.ecommerce.entity.dto.SignUpForm;
 import hmw.ecommerce.exception.EmailException;
 import hmw.ecommerce.exception.ErrorCode;
 import hmw.ecommerce.exception.MemberException;
+import hmw.ecommerce.jwt.JWTUtil;
 import hmw.ecommerce.repository.MemberRepository;
-import jakarta.validation.constraints.Email;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +26,7 @@ public class MemberService {
     private final MemberRepository memberRepository;
     private final RedisTemplate<String, Object> redisTemplate;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
+    private final JWTUtil jwtUtil;
 
     public SignUpForm.Response signUp(SignUpForm.Request request) {
         if (memberRepository.existsByLoginId(request.getLoginId())) {
@@ -39,12 +41,14 @@ public class MemberService {
         return memberRepository.existsByLoginId(loginId);
     }
 
-    public SignUpForm.Response verifyEmail(String email, String code, String loginId) {
+    public SignUpForm.Response verifyEmail(String email, String code, String jwtToken) {
+        String loginId = jwtUtil.getLoginId(jwtToken);
+
         Member findMember = memberRepository.findByLoginId(loginId)
-                .orElseThrow(() -> new MemberException(ErrorCode.INVALID_ACCESS));
+                .orElseThrow(() -> new MemberException(ErrorCode.NOT_EXIST_LOGIN_ID));
 
         if (Boolean.FALSE.equals(redisTemplate.hasKey(email))) {
-            throw new EmailException(ErrorCode.NOT_EXIST_EMAIL);
+            throw new EmailException(ErrorCode.INVALID_CODE);
         }
 
         if (!Objects.equals(redisTemplate.opsForValue().get(email), code)) {
@@ -57,11 +61,13 @@ public class MemberService {
         return SignUpForm.Response.fromEntity(findMember);
     }
 
-    public boolean matchesLoginIdAndPassword(String loginId, String password) {
-        Member findMember = memberRepository.findByLoginId(loginId).orElseThrow(
-                () -> new MemberException(ErrorCode.NOT_EXIST_LOGIN_ID));
+    public String logout(String jwtToken) {
+        addToBlacklist(jwtToken);
+        return jwtUtil.getLoginId(jwtToken);
+    }
 
-        return bCryptPasswordEncoder.matches(findMember.getPassword(), password);
+    private void addToBlacklist(String token) {
+        redisTemplate.opsForValue().set(token, "blacklisted", 1, TimeUnit.DAYS);
     }
 
 }
