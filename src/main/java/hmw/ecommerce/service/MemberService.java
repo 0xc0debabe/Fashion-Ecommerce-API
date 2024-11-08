@@ -1,7 +1,8 @@
 package hmw.ecommerce.service;
 
 import hmw.ecommerce.entity.Member;
-import hmw.ecommerce.entity.dto.SignUpForm;
+import hmw.ecommerce.entity.dto.SignUpDto;
+import hmw.ecommerce.entity.vo.Const;
 import hmw.ecommerce.exception.EmailException;
 import hmw.ecommerce.exception.ErrorCode;
 import hmw.ecommerce.exception.MemberException;
@@ -28,21 +29,21 @@ public class MemberService {
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final JWTUtil jwtUtil;
 
-    public SignUpForm.Response signUp(SignUpForm.Request request) {
+    public SignUpDto.Response signUp(SignUpDto.Request request) {
         if (memberRepository.existsByLoginId(request.getLoginId())) {
             throw new MemberException(ErrorCode.ALREADY_EXIST_LOGIN_ID);
         }
 
         request.setPassword(bCryptPasswordEncoder.encode(request.getPassword()));
-        return SignUpForm.Response.fromEntity(memberRepository.save(request.toEntity(request.isSeller())));
+        return SignUpDto.Response.fromEntity(memberRepository.save(request.toEntity(request.isSeller())));
     }
 
     public boolean duplicateCheckLoginId(String loginId) {
         return memberRepository.existsByLoginId(loginId);
     }
 
-    public SignUpForm.Response verifyEmail(String email, String code, String jwtToken) {
-        String loginId = jwtUtil.getLoginId(jwtToken);
+    public SignUpDto.Response verifyEmail(String email, String code, String token) {
+        String loginId = jwtUtil.extractLoginIdFromToken(token);
 
         Member findMember = memberRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new MemberException(ErrorCode.NOT_EXIST_LOGIN_ID));
@@ -58,10 +59,15 @@ public class MemberService {
         findMember.verifySuccess(email);
         redisTemplate.delete(findMember.getEmail());
 
-        return SignUpForm.Response.fromEntity(findMember);
+        return SignUpDto.Response.fromEntity(findMember);
     }
 
-    public String logout(String jwtToken) {
+    public String logout(String token) {
+        if (token == null || !token.startsWith(Const.BEARER)) {
+            throw new MemberException(ErrorCode.INVALID_ACCESS);
+        }
+        String jwtToken = token.replace(Const.BEARER, "");
+
         addToBlacklist(jwtToken);
         return jwtUtil.getLoginId(jwtToken);
     }

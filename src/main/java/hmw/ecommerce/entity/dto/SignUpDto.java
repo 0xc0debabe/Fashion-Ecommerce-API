@@ -2,16 +2,12 @@ package hmw.ecommerce.entity.dto;
 
 import hmw.ecommerce.entity.Member;
 import hmw.ecommerce.entity.vo.Address;
-import hmw.ecommerce.entity.vo.ConstRole;
+import hmw.ecommerce.entity.vo.Const;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.*;
 
-@Getter
-public class SignUpForm {
+public class SignUpDto {
 
     @Getter
     @Setter
@@ -37,6 +33,10 @@ public class SignUpForm {
                 message = "휴대폰 번호 형식이 올바르지 않습니다.")
         private String phone;
 
+        @NotNull
+        @Min(1)
+        private int age;
+
         @NotEmpty
         private String nickName;
 
@@ -46,14 +46,12 @@ public class SignUpForm {
 
         private boolean seller;
 
-        private String role;
-
         public Member toEntity(boolean isSeller) {
             String assignedRole;
             if (isSeller) {
-                assignedRole = ConstRole.ROLE_SELLER;
+                assignedRole = Const.ROLE_SELLER;
             } else {
-                assignedRole = ConstRole.ROLE_MEMBER;
+                assignedRole = Const.ROLE_MEMBER;
             }
 
             return Member.builder()
@@ -64,6 +62,7 @@ public class SignUpForm {
                     .nickName(this.nickName)
                     .phone(this.phone)
                     .address(this.address)
+                    .age(this.age)
                     .role(assignedRole)
                     .seller(isSeller)
                     .build();
@@ -78,6 +77,7 @@ public class SignUpForm {
         private Address address;
         private String phone;
         private String nickName;
+        private int age;
         private boolean isSeller;
 
         public static Response fromEntity(Member member) {
@@ -88,6 +88,7 @@ public class SignUpForm {
                     .isSeller(member.isSeller())
                     .nickName(member.getNickName())
                     .phone(member.getPhone())
+                    .age(member.getAge())
                     .build();
         }
 

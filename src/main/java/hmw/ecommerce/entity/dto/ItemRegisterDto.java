@@ -3,13 +3,14 @@ package hmw.ecommerce.entity.dto;
 
 import hmw.ecommerce.entity.Category;
 import hmw.ecommerce.entity.Item;
+import hmw.ecommerce.entity.Member;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
+import jakarta.validation.constraints.NotNull;
+import lombok.*;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -17,29 +18,38 @@ import java.util.Set;
 public class ItemRegisterDto {
 
     @Getter
+    @Setter
     @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class Request {
+
+        @NotEmpty
+        private String title;
         @NotEmpty
         private String itemName;
         @NotEmpty
         private String itemDescription;
 
-        @NotEmpty
         @Min(1000)
+        @NotNull
         private int price;
 
-        @NotEmpty
         @Min(1)
+        @NotNull
         private int stockQuantity;
 
+        @NotEmpty
         private Set<String> categoryNames;
 
-        public static Item toItemEntity(Request request) {
+        public static Item toItemEntity(Request request, Member member) {
             return Item.builder()
+                    .title(request.title)
                     .itemName(request.itemName)
                     .itemDescription(request.itemDescription)
                     .price(request.price)
                     .stockQuantity(request.stockQuantity)
+                    .member(member)
                     .build();
         }
 
@@ -52,13 +62,27 @@ public class ItemRegisterDto {
     }
 
     @Builder
-    @AllArgsConstructor
+    @Getter
     public static class Response {
+        private String title;
         private String itemName;
         private int price;
         private int stockQuantity;
         private Set<String> categoryNames;
+        private String loginId;
+        private String nickName;
 
+        public static Response fromRequest(Request request, Member member) {
+            return Response.builder()
+                    .title(request.getTitle())
+                    .itemName(request.getItemName())
+                    .price(request.getPrice())
+                    .stockQuantity(request.getStockQuantity())
+                    .categoryNames(request.getCategoryNames())
+                    .loginId(member.getLoginId())
+                    .nickName(member.getNickName())
+                    .build();
+        }
     }
 
 

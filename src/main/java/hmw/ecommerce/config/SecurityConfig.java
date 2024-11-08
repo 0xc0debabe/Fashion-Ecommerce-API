@@ -13,6 +13,8 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -25,6 +27,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @RequiredArgsConstructor
+@EnableMethodSecurity
 public class SecurityConfig {
 
     private final AuthenticationConfiguration authenticationConfiguration;
@@ -78,17 +81,16 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/member",
                                 "/member/duplicate-check",
-                                "/brand",
                                 "/",
                                 "/member/login").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/item/*").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/test/remove").permitAll()
                         .requestMatchers(
                                 "/member/verify/*",
                                 "/member/logout",
                                 "/email").hasAnyRole("MEMBER", "SELLER")
                         .requestMatchers(HttpMethod.POST,
                                 "/item").hasRole("SELLER")
-//                        .requestMatchers(HttpMethod.GET,
-//                                "/item/*").hasRole("SELLER")
                         .anyRequest().authenticated());
 
         http.exceptionHandling(e -> e.authenticationEntryPoint(customAuthenticationEntryPoint())

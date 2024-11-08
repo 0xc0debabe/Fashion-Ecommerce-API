@@ -28,4 +28,5 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> exception(Exception ex) {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
+
 }

@@ -3,7 +3,7 @@ package hmw.ecommerce.entity.dto;
 
 import lombok.Getter;
 
-public class LoginForm {
+public class LoginDto {
 
     @Getter
     public static class Request {

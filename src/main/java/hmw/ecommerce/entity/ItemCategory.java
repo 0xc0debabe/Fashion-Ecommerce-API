@@ -20,4 +20,11 @@ public class ItemCategory extends BaseEntity{
     @ManyToOne
     @JoinColumn(name = "category_id")
     private Category category;
+
+    public static ItemCategory createMapping(Item item, Category category) {
+        return ItemCategory.builder()
+                .item(item)
+                .category(category)
+                .build();
+    }
 }

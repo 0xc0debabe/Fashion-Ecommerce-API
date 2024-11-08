@@ -1,13 +1,9 @@
 package hmw.ecommerce.controller;
 
-import hmw.ecommerce.entity.dto.SignUpForm;
+import hmw.ecommerce.entity.dto.SignUpDto;
 import hmw.ecommerce.entity.dto.SignUpVerificationDto;
-import hmw.ecommerce.exception.ErrorCode;
-import hmw.ecommerce.exception.MemberException;
-import hmw.ecommerce.entity.vo.ConstJWT;
-import hmw.ecommerce.jwt.JWTUtil;
+import hmw.ecommerce.entity.vo.Const;
 import hmw.ecommerce.service.MemberService;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -23,7 +19,7 @@ public class MemberController {
 
     @PostMapping
     public ResponseEntity<?> signUp(
-            @Valid @RequestBody SignUpForm.Request request,
+            @Valid @RequestBody SignUpDto.Request request,
             BindingResult bindingResult) {
 
 
@@ -42,23 +38,15 @@ public class MemberController {
             @Valid @RequestBody SignUpVerificationDto signUpVerificationDto,
             BindingResult bindingResult,
             @RequestParam(name = "code") String code,
-            @RequestHeader(ConstJWT.AUTHORIZATION) String token) {
-        if (token == null || !token.startsWith(ConstJWT.BEARER)) {
-            throw new MemberException(ErrorCode.INVALID_ACCESS);
-        }
-        String jwtToken = token.replace(ConstJWT.BEARER, "");
-        return ResponseEntity.ok(memberService.verifyEmail(signUpVerificationDto.getEmail(), code, jwtToken));
+            @RequestHeader(Const.AUTHORIZATION) String token) {
+
+        return ResponseEntity.ok(memberService.verifyEmail(signUpVerificationDto.getEmail(), code, token));
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(@RequestHeader(ConstJWT.AUTHORIZATION) String token) {
-
-        if (token == null || !token.startsWith(ConstJWT.BEARER)) {
-            throw new MemberException(ErrorCode.INVALID_ACCESS);
-        }
-
-        String jwtToken = token.replace(ConstJWT.BEARER, "");
-        return ResponseEntity.ok(memberService.logout(jwtToken));
+    public ResponseEntity<?> logout(@RequestHeader(Const.AUTHORIZATION) String token) {
+        return ResponseEntity.ok(memberService.logout(token));
     }
+
 
 }

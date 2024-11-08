@@ -24,6 +24,7 @@ public class Member extends BaseEntity{
     private String username;
     private String phone;
     private String nickName;
+    private int age;
 
     private String email;
     private boolean isVerified;

@@ -2,10 +2,7 @@ package hmw.ecommerce.jwt;
 
 import hmw.ecommerce.entity.Member;
 import hmw.ecommerce.entity.dto.CustomUserDetails;
-import hmw.ecommerce.entity.vo.ConstJWT;
-import hmw.ecommerce.exception.ErrorCode;
-import hmw.ecommerce.exception.MemberException;
-import hmw.ecommerce.service.MemberService;
+import hmw.ecommerce.entity.vo.Const;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -16,7 +13,6 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.util.ObjectUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -30,9 +26,9 @@ public class JWTFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        String authorization = request.getHeader(ConstJWT.AUTHORIZATION);
+        String authorization = request.getHeader(Const.AUTHORIZATION);
 
-        if (authorization == null || !authorization.startsWith(ConstJWT.BEARER)) {
+        if (authorization == null || !authorization.startsWith(Const.BEARER)) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -40,8 +36,10 @@ public class JWTFilter extends OncePerRequestFilter {
         String token = authorization.split(" ")[1];
 
         if (jwtUtil.isExpired(token)) {
-//            filterChain.doFilter(request, response);
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            filterChain.doFilter(request, response);
+//            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+//            response.setCharacterEncoding("UTF-8");
+//            response.getWriter().write("세션이 만료되었습니다.");
             return;
         }
 
@@ -52,7 +50,6 @@ public class JWTFilter extends OncePerRequestFilter {
             response.getWriter().write("로그아웃된 사용자입니다.");
             return;
         }
-
 
         String findLoginId = jwtUtil.getLoginId(token);
         String findPassword = jwtUtil.getPassword(token);
