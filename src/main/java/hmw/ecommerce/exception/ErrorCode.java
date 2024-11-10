@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 public enum ErrorCode {
 
     INVALID_PASSWORD(HttpStatus.BAD_REQUEST, "비밀번호가 일치하지 않습니다."),
+    NOT_EXISTS_CATEGORY_TYPE(HttpStatus.BAD_REQUEST, "카테고리타입이 존재하지 않습니다."),
     NOT_EXISTS_ITEM(HttpStatus.BAD_REQUEST, "아이템이 존재하지 않습니다."),
     ALREADY_EXIST_LOGIN_ID(HttpStatus.BAD_REQUEST, "이미 존재하는 로그인 아이디입니다."),
     SESSION_EXPIRED(HttpStatus.BAD_REQUEST, "세션이 만료되었습니다."),

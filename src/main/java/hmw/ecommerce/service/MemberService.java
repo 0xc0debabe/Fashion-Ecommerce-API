@@ -7,7 +7,7 @@ import hmw.ecommerce.exception.EmailException;
 import hmw.ecommerce.exception.ErrorCode;
 import hmw.ecommerce.exception.MemberException;
 import hmw.ecommerce.jwt.JWTUtil;
-import hmw.ecommerce.repository.MemberRepository;
+import hmw.ecommerce.repository.entity.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -67,7 +67,6 @@ public class MemberService {
             throw new MemberException(ErrorCode.INVALID_ACCESS);
         }
         String jwtToken = token.replace(Const.BEARER, "");
-
         addToBlacklist(jwtToken);
         return jwtUtil.getLoginId(jwtToken);
     }

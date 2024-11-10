@@ -1,7 +1,7 @@
 package hmw.ecommerce.entity;
 
+import hmw.ecommerce.entity.dto.ItemUpdateForm;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -31,7 +31,24 @@ public class Item extends BaseEntity{
     @JoinColumn(name = "member_id")
     private Member member;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id")
+    private Category category;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_type_id")
+    private CategoryType categoryType;
+
     public void addViewCount() {
         this.viewCount += 1;
     }
+
+    public void changeItemInfo(ItemUpdateForm updateForm) {
+        this.title = updateForm.getTitle();
+        this.itemName = updateForm.getItemName();
+        this.itemDescription = updateForm.getItemDescription();
+        this.price = updateForm.getPrice();
+        this.stockQuantity = updateForm.getStockQuantity();
+    }
+
 }

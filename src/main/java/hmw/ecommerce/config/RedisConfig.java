@@ -1,7 +1,5 @@
 package hmw.ecommerce.config;
 
-import hmw.ecommerce.entity.dto.ItemDetailResponseDto;
-import hmw.ecommerce.entity.dto.ItemThumbnailResponseDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

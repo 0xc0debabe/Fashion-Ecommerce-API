@@ -4,7 +4,7 @@ import hmw.ecommerce.entity.Member;
 import hmw.ecommerce.entity.dto.CustomUserDetails;
 import hmw.ecommerce.exception.ErrorCode;
 import hmw.ecommerce.exception.MemberException;
-import hmw.ecommerce.repository.MemberRepository;
+import hmw.ecommerce.repository.entity.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

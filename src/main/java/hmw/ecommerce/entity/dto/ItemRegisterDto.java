@@ -2,17 +2,13 @@ package hmw.ecommerce.entity.dto;
 
 
 import hmw.ecommerce.entity.Category;
+import hmw.ecommerce.entity.CategoryType;
 import hmw.ecommerce.entity.Item;
 import hmw.ecommerce.entity.Member;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 
 public class ItemRegisterDto {
@@ -40,9 +36,12 @@ public class ItemRegisterDto {
         private int stockQuantity;
 
         @NotEmpty
-        private Set<String> categoryNames;
+        private String categoryName;
+        @NotEmpty
+        private String type;
 
-        public static Item toItemEntity(Request request, Member member) {
+
+        public static Item toItemEntity(Request request, Category category, Member member, CategoryType categoryType) {
             return Item.builder()
                     .title(request.title)
                     .itemName(request.itemName)
@@ -50,12 +49,8 @@ public class ItemRegisterDto {
                     .price(request.price)
                     .stockQuantity(request.stockQuantity)
                     .member(member)
-                    .build();
-        }
-
-        public static Category toCategoryEntity(String categoryName) {
-           return Category.builder()
-                    .categoryName(categoryName)
+                    .category(category)
+                    .categoryType(categoryType)
                     .build();
         }
 
@@ -68,9 +63,10 @@ public class ItemRegisterDto {
         private String itemName;
         private int price;
         private int stockQuantity;
-        private Set<String> categoryNames;
         private String loginId;
         private String nickName;
+        private String categoryName;
+        private String type;
 
         public static Response fromRequest(Request request, Member member) {
             return Response.builder()
@@ -78,11 +74,13 @@ public class ItemRegisterDto {
                     .itemName(request.getItemName())
                     .price(request.getPrice())
                     .stockQuantity(request.getStockQuantity())
-                    .categoryNames(request.getCategoryNames())
                     .loginId(member.getLoginId())
                     .nickName(member.getNickName())
+                    .categoryName(request.getCategoryName())
+                    .type(request.getType())
                     .build();
         }
+
     }
 
 

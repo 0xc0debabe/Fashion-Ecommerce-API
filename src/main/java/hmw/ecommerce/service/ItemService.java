@@ -1,22 +1,16 @@
 package hmw.ecommerce.service;
 
-import hmw.ecommerce.entity.Category;
-import hmw.ecommerce.entity.Item;
-import hmw.ecommerce.entity.ItemCategory;
-import hmw.ecommerce.entity.Member;
-import hmw.ecommerce.entity.dto.ItemRegisterDto;
-import hmw.ecommerce.entity.dto.ItemDetailResponseDto;
-import hmw.ecommerce.entity.dto.ItemThumbnailResponseDto;
-import hmw.ecommerce.entity.dto.MainItemViewDto;
-import hmw.ecommerce.entity.vo.Const;
+import hmw.ecommerce.entity.*;
+import hmw.ecommerce.entity.dto.*;
+import hmw.ecommerce.exception.CategoryTypeException;
 import hmw.ecommerce.exception.ErrorCode;
 import hmw.ecommerce.exception.ItemException;
 import hmw.ecommerce.exception.MemberException;
 import hmw.ecommerce.jwt.JWTUtil;
-import hmw.ecommerce.repository.CategoryRepository;
-import hmw.ecommerce.repository.ItemCategoryRepository;
-import hmw.ecommerce.repository.item.ItemRepository;
-import hmw.ecommerce.repository.MemberRepository;
+import hmw.ecommerce.repository.entity.CategoryRepository;
+import hmw.ecommerce.repository.entity.CategoryTypeRepository;
+import hmw.ecommerce.repository.entity.ItemRepository;
+import hmw.ecommerce.repository.entity.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -24,49 +18,42 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
+
+import static hmw.ecommerce.entity.vo.Const.RANKING_KEY;
+import static hmw.ecommerce.entity.vo.Const.TOP_RANKING_ITEM_KEY;
 
 @RequiredArgsConstructor
 @Service
-@Transactional
+@Transactional(readOnly = true)
 public class ItemService {
 
     private static final int RANGE_START = 0;
     private static final int RANGE_END = 14;
+    public static int NEXT_RANK = 14;
 
     private final MemberRepository memberRepository;
-    private final ItemCategoryRepository itemCategoryRepository;
     private final ItemRepository itemRepository;
     private final CategoryRepository categoryRepository;
+    private final CategoryTypeRepository categoryTypeRepository;
     private final JWTUtil jwtUtil;
     private final RedisTemplate<String, Object> redisTemplate;
 
+    @Transactional
     public ItemRegisterDto.Response register(ItemRegisterDto.Request itemRegisterDto, String token) {
         String loginId = jwtUtil.extractLoginIdFromToken(token);
 
         Member findMember = memberRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new MemberException(ErrorCode.NOT_EXIST_LOGIN_ID));
 
-        Item findItem = ItemRegisterDto.Request.toItemEntity(itemRegisterDto, findMember);
-        itemRepository.save(findItem);
-
-        Set<String> categoryNames = itemRegisterDto.getCategoryNames();
-        for (String categoryName : categoryNames) {
-            Category findCategory = getOrCreateCategory(categoryName);
-            itemCategoryRepository.save(ItemCategory.createMapping(findItem, findCategory));
-        }
+        saveItemAndCategoryAndCategoryType(itemRegisterDto, findMember);
 
         return ItemRegisterDto.Response.fromRequest(itemRegisterDto, findMember);
-    }
-
-    public List<Item> findItemsEagerlyByIds(Set<Long> top15ItemIds) {
-        return itemRepository.findItemsEagerlyByIds(top15ItemIds);
     }
 
     public MainItemViewDto getItemMainPage() {
@@ -77,26 +64,18 @@ public class ItemService {
         Page<Item> recentItems = itemRepository.findByOrderByCreatedAtDesc(pageable);
 
         List<ItemThumbnailResponseDto> recentItemDtos = recentItems
-                .map(item ->
-                        ItemThumbnailResponseDto.fromItemEntity(item, item.getMember())
-                ).getContent();
+                .map(item -> ItemThumbnailResponseDto.fromItemEntity(item, item.getMember()))
+                .getContent();
 
-        MainItemViewDto mainItemViewDto = new MainItemViewDto(top15ItemsMap, recentItemDtos);
-        return mainItemViewDto;
-    }
-
-    private Map<Long, ItemThumbnailResponseDto> getTop15ItemsToMap(HashOperations<String, Long, Object> hashOperations) {
-        return hashOperations.entries(Const.TOP_RANKING_ITEM_KEY).entrySet().stream()
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        entry -> (ItemThumbnailResponseDto) entry.getValue()
-                ));
+        return new MainItemViewDto(top15ItemsMap, recentItemDtos);
     }
 
     public ItemDetailResponseDto getItemDetail(Long itemId) {
-        Item findItem = itemRepository.findById(itemId)
+        Item item = itemRepository.findItemFetchMemberAndCategoryByItemId(itemId)
                 .orElseThrow(() -> new ItemException(ErrorCode.NOT_EXISTS_ITEM));
-        return ItemDetailResponseDto.fromEntity(findItem);
+        CategoryType categoryType = categoryTypeRepository.findByCategoryId(item.getCategory().getId())
+                .orElseThrow(() -> new CategoryTypeException(ErrorCode.NOT_EXISTS_CATEGORY_TYPE));
+        return ItemDetailResponseDto.fromEntity(item, item.getCategory(), categoryType);
     }
 
     public Item findByItemId(Long itemId) {
@@ -104,15 +83,93 @@ public class ItemService {
                 .orElseThrow(() -> new ItemException(ErrorCode.NOT_EXISTS_ITEM));
     }
 
-    private Category getOrCreateCategory(String categoryName) {
-        return categoryRepository.findByCategoryName(categoryName)
-                .orElseGet(() -> categoryRepository.save(getCategory(categoryName)));
+    @Transactional
+    public Long removeItem(Long itemId, String token) {
+        Item findItem = itemRepository.findItemFetchMemberByItemId(itemId)
+                .orElseThrow(() -> new ItemException(ErrorCode.NOT_EXISTS_ITEM));
+
+        String loginId = jwtUtil.extractLoginIdFromToken(token);
+        if (!findItem.getMember().getLoginId().equals(loginId)) {
+            throw new ItemException(ErrorCode.INVALID_ACCESS);
+        }
+
+        removeItemFromRanking(itemId);
+        return itemId;
     }
 
-    private Category getCategory(String categoryName) {
-        return ItemRegisterDto.Request.toCategoryEntity(categoryName);
+    @Transactional
+    public Long modifyItem(String token, Long itemId, ItemUpdateForm updateForm) {
+        Item findItem = itemRepository.findItemFetchMemberByItemId(itemId)
+                .orElseThrow(() -> new ItemException(ErrorCode.NOT_EXISTS_ITEM));
+
+        String loginId = jwtUtil.extractLoginIdFromToken(token);
+        if (!findItem.getMember().getLoginId().equals(loginId)) {
+            throw new ItemException(ErrorCode.INVALID_ACCESS);
+        }
+
+        updateItemInRanking(findItem, itemId, updateForm);
+        return findItem.getId();
     }
 
+    public List<ItemThumbnailResponseDto> searchItemByCategory(String category, String type, Pageable pageable) {
+        Page<Item> itemByCategoryAndType = itemRepository.findItemByCategoryAndType(category, type, pageable);
+        return itemByCategoryAndType
+                .map(item -> ItemThumbnailResponseDto.fromItemEntity(item, item.getMember()))
+                .toList();
+    }
+
+    private void updateItemInRanking(Item item, Long itemId, ItemUpdateForm updateForm) {
+        item.changeItemInfo(updateForm);
+
+        if (isExistInRanking(itemId)) {
+            HashOperations<String, Object, ItemThumbnailResponseDto> hashOperations = redisTemplate.opsForHash();
+            ItemThumbnailResponseDto updatedItemDto = ItemThumbnailResponseDto.fromItemEntity(item, item.getMember());
+            hashOperations.put(TOP_RANKING_ITEM_KEY, itemId, updatedItemDto);
+        }
+
+    }
+
+    private void removeItemFromRanking(Long itemId) {
+        if (isExistInRanking(itemId)) {
+            HashOperations<String, Object, ItemThumbnailResponseDto> hashOperations = redisTemplate.opsForHash();
+            ZSetOperations<String, Object> zSetOperations = redisTemplate.opsForZSet();
+            hashOperations.delete(TOP_RANKING_ITEM_KEY, itemId);
+            zSetOperations.remove(RANKING_KEY, itemId);
+        }
+
+        itemRepository.deleteById(itemId);
+    }
+
+    private boolean isExistInRanking(Long itemId) {
+        HashOperations<String, Object, ItemThumbnailResponseDto> hashOperations = redisTemplate.opsForHash();
+        return hashOperations.hasKey(TOP_RANKING_ITEM_KEY, itemId);
+    }
+
+
+    private Map<Long, ItemThumbnailResponseDto> getTop15ItemsToMap(HashOperations<String, Long, Object> hashOperations) {
+        return hashOperations.entries(TOP_RANKING_ITEM_KEY).entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> (ItemThumbnailResponseDto) entry.getValue()
+                ));
+    }
+
+    private void saveItemAndCategoryAndCategoryType(ItemRegisterDto.Request itemRegisterDto, Member findMember) {
+        String categoryName = itemRegisterDto.getCategoryName();
+        Category category = categoryRepository.findByCategoryName(categoryName)
+                .orElseGet(() -> categoryRepository.save(Category.builder()
+                        .categoryName(categoryName)
+//                        .categoryTypes(new ArrayList<>())
+                        .build()));
+
+        String type = itemRegisterDto.getType();
+        CategoryType categoryType = categoryTypeRepository.findByTypeName(type)
+                .orElseGet(() -> categoryTypeRepository
+                        .save(CategoryType.toEntity(type, category)));
+
+
+        itemRepository.save(ItemRegisterDto.Request.toItemEntity(itemRegisterDto, category, findMember, categoryType));
+    }
 
 
 }

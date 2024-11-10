@@ -1,4 +1,4 @@
-package hmw.ecommerce.repository;
+package hmw.ecommerce.repository.entity;
 
 import hmw.ecommerce.entity.Category;
 import org.springframework.data.jpa.repository.JpaRepository;
