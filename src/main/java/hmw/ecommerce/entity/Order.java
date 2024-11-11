@@ -16,8 +16,10 @@ public class Order extends BaseEntity {
     @Column(name = "order_id")
     private Long id;
 
+    private int count;
+    private int price;
+
     private LocalDateTime orderDate;
-    private BigDecimal totalAmount;
 
     @Enumerated(EnumType.STRING)
     private OrderStatus orderStatus;

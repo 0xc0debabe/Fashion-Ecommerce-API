@@ -1,4 +1,4 @@
-package hmw.ecommerce.entity.dto;
+package hmw.ecommerce.entity.dto.Item;
 
 
 import hmw.ecommerce.entity.Category;

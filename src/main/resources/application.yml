@@ -1,0 +1,42 @@
+spring:
+
+  profiles:
+    active: local
+
+  redis:
+    host: localhost
+    port: 6379
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: kongminoo0421@gmail.com
+    password: "rxii nbzg mwud rrxh"
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+  jwt:
+    secret: "a6d9b8e1c5f7a4d3e2b6c8f9g0h1i2j3k4l5m6n7o8p9q0r1s2t3u4v5w6x7y8z9"
+
+  aes:
+    secret: "8jVsT#2u4!mQz@1D"
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/fashionDB
+    username: fashion
+    password: 1234
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+        use_sql_comments: true
+
+  logging.level:
+    org.hibernate.SQL: debug

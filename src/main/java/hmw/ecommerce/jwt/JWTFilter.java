@@ -1,7 +1,7 @@
 package hmw.ecommerce.jwt;
 
 import hmw.ecommerce.entity.Member;
-import hmw.ecommerce.entity.dto.CustomUserDetails;
+import hmw.ecommerce.entity.dto.member.CustomUserDetails;
 import hmw.ecommerce.entity.vo.Const;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

@@ -1,11 +1,10 @@
-package hmw.ecommerce.entity.dto;
+package hmw.ecommerce.entity.dto.Item;
 
 import hmw.ecommerce.entity.Item;
 import hmw.ecommerce.entity.Member;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.io.Serializable;
 

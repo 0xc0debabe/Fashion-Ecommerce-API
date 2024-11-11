@@ -1,9 +1,9 @@
 package hmw.ecommerce.controller;
 
 
-import hmw.ecommerce.entity.dto.ItemRegisterDto;
-import hmw.ecommerce.entity.dto.ItemUpdateForm;
-import hmw.ecommerce.entity.dto.MainItemViewDto;
+import hmw.ecommerce.entity.dto.Item.ItemRegisterDto;
+import hmw.ecommerce.entity.dto.Item.ItemUpdateForm;
+import hmw.ecommerce.entity.dto.Item.ItemMainViewDto;
 import hmw.ecommerce.entity.vo.Const;
 import hmw.ecommerce.service.ItemService;
 import jakarta.validation.Valid;
@@ -13,8 +13,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
@@ -34,7 +32,7 @@ public class ItemController {
 
     @GetMapping()
     public ResponseEntity<?> getItemMainPage() {
-        MainItemViewDto itemMainPage = itemService.getItemMainPage();
+        ItemMainViewDto itemMainPage = itemService.getItemMainPage();
         return ResponseEntity.ok(itemMainPage);
     }
 

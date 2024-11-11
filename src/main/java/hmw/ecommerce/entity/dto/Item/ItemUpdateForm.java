@@ -1,4 +1,4 @@
-package hmw.ecommerce.entity.dto;
+package hmw.ecommerce.entity.dto.Item;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;

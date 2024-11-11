@@ -1,7 +1,7 @@
 package hmw.ecommerce.service;
 
 import hmw.ecommerce.entity.Member;
-import hmw.ecommerce.entity.dto.SignUpDto;
+import hmw.ecommerce.entity.dto.member.SignUpDto;
 import hmw.ecommerce.entity.vo.Const;
 import hmw.ecommerce.exception.EmailException;
 import hmw.ecommerce.exception.ErrorCode;

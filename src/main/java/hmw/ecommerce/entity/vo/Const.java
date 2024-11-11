@@ -13,4 +13,6 @@ public abstract class Const {
     public static final String TOP_RANKING_ITEM_KEY = "TOP_RANKING_ITEM_KEY";
     public static final String RANKING_KEY = "RANKING_KEY";
     public static final String VIEW_COUNT = "VIEW_COUNT";
+
+    public static final String CART_ITEMS = "CART_ITEMS";
 }

@@ -1,9 +1,7 @@
 package hmw.ecommerce.controller;
 
-import hmw.ecommerce.entity.dto.SignUpVerificationDto;
-import hmw.ecommerce.exception.Validation;
+import hmw.ecommerce.entity.dto.member.SignUpVerificationDto;
 import hmw.ecommerce.service.EmailService;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

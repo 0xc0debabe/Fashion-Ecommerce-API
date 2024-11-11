@@ -1,9 +1,8 @@
-package hmw.ecommerce.entity.dto;
+package hmw.ecommerce.entity.dto.Item;
 
 import hmw.ecommerce.entity.Category;
 import hmw.ecommerce.entity.CategoryType;
 import hmw.ecommerce.entity.Item;
-import hmw.ecommerce.entity.Member;
 import lombok.Builder;
 import lombok.Getter;
 

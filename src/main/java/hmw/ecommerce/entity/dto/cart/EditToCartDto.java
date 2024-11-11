@@ -2,11 +2,14 @@ package hmw.ecommerce.entity.dto.cart;
 
 import hmw.ecommerce.entity.Item;
 import jakarta.validation.constraints.Min;
-import lombok.*;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
 
 import java.io.Serializable;
 
-public class AddToCartDto {
+public class EditToCartDto {
 
     @Getter
     public static class Request{
@@ -16,7 +19,6 @@ public class AddToCartDto {
 
     @Builder
     @Getter
-    @Setter
     @ToString
     @EqualsAndHashCode
     public static class Response implements Serializable {
@@ -25,7 +27,7 @@ public class AddToCartDto {
         private int price;
         private int count;
 
-        public static AddToCartDto.Response fromItemEntity(Item item, int count) {
+        public static EditToCartDto.Response fromItemEntity(Item item, int count) {
             return Response.builder()
                     .itemId(item.getId())
                     .itemName(item.getItemName())

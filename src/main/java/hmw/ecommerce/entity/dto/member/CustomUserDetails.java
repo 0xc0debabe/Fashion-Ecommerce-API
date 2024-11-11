@@ -1,4 +1,4 @@
-package hmw.ecommerce.entity.dto;
+package hmw.ecommerce.entity.dto.member;
 
 import hmw.ecommerce.entity.Member;
 import lombok.RequiredArgsConstructor;

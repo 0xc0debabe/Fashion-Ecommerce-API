@@ -1,4 +1,4 @@
-package hmw.ecommerce.entity.dto;
+package hmw.ecommerce.entity.dto.member;
 
 
 import lombok.Getter;

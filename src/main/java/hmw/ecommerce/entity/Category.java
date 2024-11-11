@@ -24,7 +24,4 @@ public class Category extends BaseEntity{
 
     private String categoryName;
 
-//    @OneToMany(mappedBy = "category")
-//    private List<CategoryType> categoryTypes = new ArrayList<>();
-
 }

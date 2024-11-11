@@ -1,6 +1,8 @@
 package hmw.ecommerce.entity;
 
-import hmw.ecommerce.entity.dto.ItemUpdateForm;
+import hmw.ecommerce.entity.dto.Item.ItemUpdateForm;
+import hmw.ecommerce.exception.ErrorCode;
+import hmw.ecommerce.exception.ItemException;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -49,6 +51,12 @@ public class Item extends BaseEntity{
         this.itemDescription = updateForm.getItemDescription();
         this.price = updateForm.getPrice();
         this.stockQuantity = updateForm.getStockQuantity();
+    }
+
+    public void checkStockAvailability(int count) {
+        if (this.getStockQuantity() - count < 0) {
+            throw new ItemException(ErrorCode.OUT_OF_STOCK);
+        }
     }
 
 }

@@ -5,7 +5,6 @@ import lombok.Getter;
 
 @Entity
 @Getter
-
 public class Cart extends BaseEntity{
 
     @Id
@@ -21,7 +20,7 @@ public class Cart extends BaseEntity{
     @JoinColumn(name = "item_id")
     private Item item;
 
-    private int totalPrice;
-    private int totalCount;
+    private int price;
+    private int count;
 
 }

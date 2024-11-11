@@ -1,7 +1,7 @@
 package hmw.ecommerce.scheduler;
 
 import hmw.ecommerce.entity.Item;
-import hmw.ecommerce.entity.dto.ItemThumbnailResponseDto;
+import hmw.ecommerce.entity.dto.Item.ItemThumbnailResponseDto;
 import hmw.ecommerce.entity.vo.Const;
 import hmw.ecommerce.repository.entity.ItemRepository;
 import hmw.ecommerce.service.ItemService;
@@ -29,7 +29,7 @@ public class ItemScheduler {
     private final ItemRepository itemRepository;
     private final RedisTemplate<String, Object> redisTemplate;
 
-//    @Scheduled(cron = "0 0/26 * * * *", zone = "Asia/Seoul")
+//    @Scheduled(cron = "0 0/2 * * * *", zone = "Asia/Seoul")
     @Scheduled(cron = "0 0 6 * * MON", zone = "Asia/Seoul")
     public void showTop15Items() {
         ItemService.NEXT_RANK = 14;

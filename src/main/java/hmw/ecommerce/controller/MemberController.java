@@ -1,7 +1,7 @@
 package hmw.ecommerce.controller;
 
-import hmw.ecommerce.entity.dto.SignUpDto;
-import hmw.ecommerce.entity.dto.SignUpVerificationDto;
+import hmw.ecommerce.entity.dto.member.SignUpDto;
+import hmw.ecommerce.entity.dto.member.SignUpVerificationDto;
 import hmw.ecommerce.entity.vo.Const;
 import hmw.ecommerce.service.MemberService;
 import jakarta.validation.Valid;

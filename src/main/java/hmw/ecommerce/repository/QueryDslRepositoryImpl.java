@@ -61,6 +61,7 @@ public class QueryDslRepositoryImpl implements QueryDslRepository {
                 queryFactory.selectFrom(item)
                         .join(item.member)
                         .join(item.category)
+                        .join(item.categoryType)
                         .fetchJoin()
                         .where(item.id.eq(itemId))
                         .fetchOne());

@@ -20,11 +20,15 @@ public class TestController {
     @GetMapping("/test/remove")
     public String remove(HttpServletResponse response) {
         // 쿠키 삭제: 이름이 "VIEW_COUNT"인 쿠키를 삭제
-        Cookie cookie = new Cookie("VIEW_COUNT", "");  // 쿠키의 값을 빈 문자열로 설정
-        cookie.setMaxAge(0);  // 쿠키의 만료 시간을 0으로 설정하여 삭제
-        cookie.setPath("/");  // 쿠키의 경로를 설정 (일반적으로 "/"로 설정하면 모든 경로에서 유효)
-        response.addCookie(cookie);  // 응답에 쿠키 추가
+        Cookie cookie = new Cookie("VIEW_COUNT", "");
+        cookie.setMaxAge(0);
+        cookie.setPath("/");
+        response.addCookie(cookie);
 
+        Cookie cookie2 = new Cookie(Const.CART_ITEMS, "");
+        cookie2.setMaxAge(0);
+        cookie2.setPath("/");
+        response.addCookie(cookie2);
         return "ok";
     }
 

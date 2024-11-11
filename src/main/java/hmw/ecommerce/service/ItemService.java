@@ -1,8 +1,7 @@
 package hmw.ecommerce.service;
 
 import hmw.ecommerce.entity.*;
-import hmw.ecommerce.entity.dto.*;
-import hmw.ecommerce.exception.CategoryTypeException;
+import hmw.ecommerce.entity.dto.Item.*;
 import hmw.ecommerce.exception.ErrorCode;
 import hmw.ecommerce.exception.ItemException;
 import hmw.ecommerce.exception.MemberException;
@@ -56,7 +55,7 @@ public class ItemService {
         return ItemRegisterDto.Response.fromRequest(itemRegisterDto, findMember);
     }
 
-    public MainItemViewDto getItemMainPage() {
+    public ItemMainViewDto getItemMainPage() {
         HashOperations<String, Long, Object> hashOperations = redisTemplate.opsForHash();
         Map<Long, ItemThumbnailResponseDto> top15ItemsMap = getTop15ItemsToMap(hashOperations);
 
@@ -67,15 +66,21 @@ public class ItemService {
                 .map(item -> ItemThumbnailResponseDto.fromItemEntity(item, item.getMember()))
                 .getContent();
 
-        return new MainItemViewDto(top15ItemsMap, recentItemDtos);
+        return new ItemMainViewDto(top15ItemsMap, recentItemDtos);
+    }
+
+    private Map<Long, ItemThumbnailResponseDto> getTop15ItemsToMap(HashOperations<String, Long, Object> hashOperations) {
+        return hashOperations.entries(TOP_RANKING_ITEM_KEY).entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> (ItemThumbnailResponseDto) entry.getValue()
+                ));
     }
 
     public ItemDetailResponseDto getItemDetail(Long itemId) {
         Item item = itemRepository.findItemFetchMemberAndCategoryByItemId(itemId)
                 .orElseThrow(() -> new ItemException(ErrorCode.NOT_EXISTS_ITEM));
-        CategoryType categoryType = categoryTypeRepository.findByCategoryId(item.getCategory().getId())
-                .orElseThrow(() -> new CategoryTypeException(ErrorCode.NOT_EXISTS_CATEGORY_TYPE));
-        return ItemDetailResponseDto.fromEntity(item, item.getCategory(), categoryType);
+        return ItemDetailResponseDto.fromEntity(item, item.getCategory(), item.getCategoryType());
     }
 
     public Item findByItemId(Long itemId) {
@@ -146,13 +151,7 @@ public class ItemService {
     }
 
 
-    private Map<Long, ItemThumbnailResponseDto> getTop15ItemsToMap(HashOperations<String, Long, Object> hashOperations) {
-        return hashOperations.entries(TOP_RANKING_ITEM_KEY).entrySet().stream()
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        entry -> (ItemThumbnailResponseDto) entry.getValue()
-                ));
-    }
+
 
     private void saveItemAndCategoryAndCategoryType(ItemRegisterDto.Request itemRegisterDto, Member findMember) {
         String categoryName = itemRegisterDto.getCategoryName();

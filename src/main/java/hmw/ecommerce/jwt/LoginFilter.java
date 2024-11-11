@@ -1,8 +1,8 @@
 package hmw.ecommerce.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import hmw.ecommerce.entity.dto.CustomUserDetails;
-import hmw.ecommerce.entity.dto.LoginDto;
+import hmw.ecommerce.entity.dto.member.CustomUserDetails;
+import hmw.ecommerce.entity.dto.member.LoginDto;
 import hmw.ecommerce.entity.vo.Const;
 import hmw.ecommerce.exception.ErrorCode;
 import hmw.ecommerce.exception.ParseException;

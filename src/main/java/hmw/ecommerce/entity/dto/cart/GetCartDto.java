@@ -1,5 +1,6 @@
 package hmw.ecommerce.entity.dto.cart;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -7,6 +8,7 @@ import java.util.Set;
 
 @Builder
 @Getter
+@AllArgsConstructor
 public class GetCartDto {
 
     private Set<AddToCartDto.Response> addToCartDtos;
