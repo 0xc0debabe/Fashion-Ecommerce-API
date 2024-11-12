@@ -46,8 +46,6 @@
 ### 관리자 등등...
 
 ## 🧾 ERD
-![image](https://github.com/user-attachments/assets/b639f85f-0f1a-4c05-95d9-c14892dbdbe9)
-
-
+![스크린샷 2024-11-12 오전 2 39 13](https://github.com/user-attachments/assets/f04f0957-0b7f-4417-a179-3df71341f9bd)
 
 ## 🚨 Trouble Shooting
