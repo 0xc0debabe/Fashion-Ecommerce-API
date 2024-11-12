@@ -53,7 +53,9 @@ public class CartService {
 
         int count = cartRequest.getCount();
         Item findItem = getItemIfExist(itemId);
-        findItem.checkStockAvailability(count);
+        if (!findItem.isStockAvailability(count)) {
+            throw new ItemException(ErrorCode.OUT_OF_STOCK);
+        }
 
         String loginId = getLoginId(token);
         AddToCartDto.Response cartDtoResponse = AddToCartDto.Response.fromItemEntity(findItem, count);
@@ -70,6 +72,7 @@ public class CartService {
     /**
      * 현재 장바구니 정보를 가져옵니다.
      */
+    @Transactional(readOnly = true)
     public GetCartDto getCartItem(HttpServletRequest request, HttpServletResponse res, String token) {
         String loginId = getLoginId(token);
 
@@ -106,7 +109,9 @@ public class CartService {
 
         int count = cartRequest.getCount();
         Item findItem = getItemIfExist(itemId);
-        findItem.checkStockAvailability(count);
+        if (findItem.isStockAvailability(count)) {
+            throw new ItemException(ErrorCode.OUT_OF_STOCK);
+        }
         String loginId = getLoginId(token);
         EditToCartDto.Response cartDtoResponse = EditToCartDto.Response.fromItemEntity(findItem, count);
 
