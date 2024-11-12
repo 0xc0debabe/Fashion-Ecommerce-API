@@ -34,6 +34,13 @@ public enum ErrorCode {
     INVALID_ACCESS(HttpStatus.BAD_REQUEST, "접근이 불가능합니다."),
     INVALID_CODE(HttpStatus.BAD_REQUEST, "코드가 일치하지 않습니다."),
 
+    // 리뷰 예외
+    NOT_EXIST_REVIEW(HttpStatus.BAD_REQUEST, "해당 리뷰가 존재하지 않습니다."),
+    UNAUTHORIZED_UPDATE_REVIEW(HttpStatus.BAD_REQUEST, "리뷰 수정이 불가능합니다."),
+
+    // 주문 예외
+    ORDER_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "주문을 진행할 수 없습니다."),
+
     // 기타 예외
     FAIL_TO_PARSE(HttpStatus.BAD_REQUEST, "파싱하는데 실패하였습니다."),
     INVALID_VERIFICATION_CODE(HttpStatus.BAD_REQUEST, "역직렬화 오류"),
