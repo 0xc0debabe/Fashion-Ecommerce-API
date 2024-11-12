@@ -14,14 +14,13 @@
 - **JDK** : OpenJDK-17
 - **Cache** : Redis
 - **Authentication** : JWT
-- **Search Engine** : Elasticsearch
 - **Persistence & Querying** : Spring Data JPA, QueryDSL
 
 ## 📢 주요 기능 설명
 
 ### Member
 - **회원가입 기능**
-  - Jwt를 이용한 로그인 기능 (학습 필요)
+  - Jwt를 이용한 로그인 기능
   
 - **로그아웃 기능**
 
@@ -29,10 +28,10 @@
 - 장바구니로 한번에 주문 가능
 
 ### Cart
-- Redis를 이용한 장바구니 기능 (학습 필요)
+- Redis를 이용한 장바구니 기능
 
 ### Item
-- Elasticsearch를 이용한 검색 (학습 필요)
+
 
 ### Delivery
 - 작성 중
@@ -41,7 +40,7 @@
 - 상품에 별점과 코멘트를 작성하는 기능
 
 ### Category
-- Querydsl을 이용한 동적 쿼리로 조회 기능 (추가 예정)
+- Querydsl을 이용한 동적 쿼리로 조회 기능
 
 ### 관리자 등등...
 
