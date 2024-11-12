@@ -6,11 +6,24 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(MemberException.class)
-    public ResponseEntity<String> handleMemberException(MemberException ex) {
+    @ExceptionHandler(AuthException.class)
+    public ResponseEntity<String> handleAuthException(AuthException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(CartException.class)
+    public ResponseEntity<String> handleCartException(CartException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(CategoryTypeException.class)
+    public ResponseEntity<String> handleCategoryTypeExceptionException(CategoryTypeException ex) {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
@@ -19,9 +32,30 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(ItemException.class)
+    public ResponseEntity<String> handleItemExceptionException(ItemException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(MemberException.class)
+    public ResponseEntity<String> handleMemberException(MemberException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(ParseException.class)
     public ResponseEntity<String> handleParseException(ParseException ex) {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(OrderException.class)
+    public ResponseEntity<Map<String, Object>> handleOrderException(OrderException ex) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("errorCode", ex.getErrorCode().name());
+        response.put("message", ex.getMessage());
+        if (ex.getStockErrorList() != null && !ex.getStockErrorList().isEmpty()) {
+            response.put("stockErrorList", ex.getStockErrorList());
+        }
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(Exception.class)
