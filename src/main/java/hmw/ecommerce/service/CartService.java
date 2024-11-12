@@ -110,12 +110,16 @@ public class CartService {
         String loginId = getLoginId(token);
         EditToCartDto.Response cartDtoResponse = EditToCartDto.Response.fromItemEntity(findItem, count);
 
+        boolean updateExist;
         if (!StringUtils.hasText(loginId)) {
-            updateCartInCookie(request, response, cartDtoResponse);
+            updateExist = updateCartInCookie(request, response, cartDtoResponse);
         } else {
-            updateCartInRedis(loginId, cartDtoResponse);
+            updateExist = updateCartInRedis(loginId, cartDtoResponse);
         }
 
+        if (!updateExist) {
+            throw new CartException(ErrorCode.CANNOT_EDIT_CART_ITEM);
+        }
         return cartDtoResponse;
     }
 
@@ -128,10 +132,15 @@ public class CartService {
             HttpServletRequest request,
             HttpServletResponse response) {
         String loginId = getLoginId(token);
+        boolean deleteExist;
         if (!StringUtils.hasText(loginId)) {
-            deleteCartFromCookie(request, response, itemId);
+            deleteExist = deleteCartFromCookie(request, response, itemId);
         } else {
-            deleteCartFromRedis(loginId, itemId);
+            deleteExist = deleteCartFromRedis(loginId, itemId);
+        }
+
+        if (!deleteExist) {
+            throw new CartException(ErrorCode.CANNOT_DELETE_CART_ITEM);
         }
 
         return itemId;
@@ -250,7 +259,7 @@ public class CartService {
     /**
      * 쿠키에서 장바구니 정보를 수정합니다.
      */
-    private void updateCartInCookie(
+    private boolean updateCartInCookie(
             HttpServletRequest request,
             HttpServletResponse response,
             EditToCartDto.Response cartDtoResponse) {
@@ -260,11 +269,17 @@ public class CartService {
             throw new CartException(ErrorCode.CANNOT_EDIT_CART_ITEM);
         }
 
+        boolean updateExist = false;
+
         for (AddToCartDto.Response cartItem : cartItems) {
             if (cartItem.getItemId().equals(cartDtoResponse.getItemId())) {
                 cartItem.setCount(cartDtoResponse.getCount());
+                updateExist = true;
                 break;
             }
+        }
+        if (!updateExist) {
+            return false;
         }
 
         try {
@@ -278,12 +293,13 @@ public class CartService {
             throw new CartException(ErrorCode.CANNOT_EDIT_CART_ITEM);
         }
 
+        return true;
     }
 
     /**
      * Redis에서 장바구니 정보를 수정합니다.
      */
-    private void updateCartInRedis(
+    private boolean updateCartInRedis(
             String loginId,
             EditToCartDto.Response cartDtoResponse) {
 
@@ -293,31 +309,45 @@ public class CartService {
             throw new CartException(ErrorCode.CANNOT_EDIT_CART_ITEM);
         }
 
+        boolean updateExist = false;
         for (AddToCartDto.Response cartItem : cartItems) {
             if (cartItem.getItemId().equals(cartDtoResponse.getItemId())) {
                 cartItem.setCount(cartDtoResponse.getCount());
+                updateExist = true;
                 break;
             }
         }
 
+        if (!updateExist) {
+            return false;
+        }
+
         hashOperations.put(CART_ITEMS, loginId, cartItems);
         redisTemplate.expire(CART_ITEMS, 1, TimeUnit.DAYS);
+        return true;
     }
 
     /**
      * 쿠키에서 장바구니 아이템을 삭제합니다.
      */
-    private void deleteCartFromCookie(HttpServletRequest request, HttpServletResponse response, Long itemId) {
+    private boolean deleteCartFromCookie(HttpServletRequest request, HttpServletResponse response, Long itemId) {
         Set<AddToCartDto.Response> cartDtoSetFromCookie = getCartFromCookie(request);
         if (cartDtoSetFromCookie == null || cartDtoSetFromCookie.isEmpty()) {
             throw new CartException(ErrorCode.CANNOT_DELETE_CART_ITEM);
         }
+        boolean deleteExist = false;
         for (AddToCartDto.Response cartResponse : cartDtoSetFromCookie) {
             if (cartResponse.getItemId().equals(itemId)) {
                 cartDtoSetFromCookie.remove(cartResponse);
+                deleteExist = true;
                 break;
             }
         }
+
+        if (!deleteExist) {
+            return false;
+        }
+
         try {
             String jsonSet = objectMapper.writeValueAsString(cartDtoSetFromCookie);
             String encryptJsonSet = aesUtil.encrypt(jsonSet);
@@ -328,25 +358,32 @@ public class CartService {
             throw new CartException(ErrorCode.CANNOT_DELETE_CART_ITEM);
         }
 
+        return true;
     }
 
     /**
      * Redis에서 장바구니 아이템을 삭제합니다.
      */
-    private void deleteCartFromRedis(String loginId, Long itemId) {
+    private boolean deleteCartFromRedis(String loginId, Long itemId) {
         HashOperations<String, String, Set<AddToCartDto.Response>> hashOperations = redisTemplate.opsForHash();
         Set<AddToCartDto.Response> cartItems = hashOperations.get(CART_ITEMS, loginId);
         if (cartItems == null || cartItems.isEmpty()) {
             throw new CartException(ErrorCode.CANNOT_DELETE_CART_ITEM);
         }
+        boolean deleteExist = false;
         for (AddToCartDto.Response cartResponse : cartItems) {
             if (cartResponse.getItemId().equals(itemId)) {
                 cartItems.remove(cartResponse);
+                deleteExist = true;
                 break;
             }
         }
+        if (!deleteExist) {
+            return false;
+        }
         hashOperations.put(CART_ITEMS, loginId, cartItems);
         redisTemplate.expire(CART_ITEMS, 1, TimeUnit.DAYS);
+        return true;
     }
 
     /**

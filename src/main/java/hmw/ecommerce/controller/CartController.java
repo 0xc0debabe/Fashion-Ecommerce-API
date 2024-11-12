@@ -54,8 +54,7 @@ public class CartController {
             HttpServletRequest request,
             HttpServletResponse response,
             @RequestHeader(name = Const.AUTHORIZATION, required = false) String token,
-            @PathVariable(name = "itemId") Long itemId,
-            BindingResult bindingResult) {
+            @PathVariable(name = "itemId") Long itemId) {
         return ResponseEntity.ok(cartService.deleteCartItem(itemId, token, request, response));
     }
 

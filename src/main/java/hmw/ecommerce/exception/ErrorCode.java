@@ -23,7 +23,7 @@ public enum ErrorCode {
     NOT_EXISTS_CATEGORY_TYPE(HttpStatus.BAD_REQUEST, "카테고리타입이 존재하지 않습니다."),
 
     // 장바구니 예외
-    ALREADY_EXIST_ITEM_TO_CART(HttpStatus.BAD_REQUEST, "장바구니에 존재하는 아이템입니다."),
+    ALREADY_EXIST_ITEM_TO_CART(HttpStatus.BAD_REQUEST, "이미 장바구니에 존재하는 아이템입니다."),
     CAN_NOT_ADD_TO_CART(HttpStatus.BAD_REQUEST, "장바구니에 추가할 수 없습니다."),
     CANNOT_FOUND_CART_ITEM(HttpStatus.BAD_REQUEST, "장바구니 아이템을 찾을 수 없습니다."),
     CANNOT_EDIT_CART_ITEM(HttpStatus.BAD_REQUEST, "장바구니 아이템을 수정할 수 없습니다."),
