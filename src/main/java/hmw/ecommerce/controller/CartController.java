@@ -33,9 +33,9 @@ public class CartController {
     @GetMapping
     public ResponseEntity<?> getCartItem(
             HttpServletRequest request,
+            HttpServletResponse response,
             @RequestHeader(name = Const.AUTHORIZATION, required = false) String token) {
-
-        return ResponseEntity.ok(cartService.getCartItem(request, token));
+        return ResponseEntity.ok(cartService.getCartItem(request, response, token));
     }
 
     @PutMapping("/{itemId}")

@@ -70,14 +70,14 @@ public class CartService {
     /**
      * 현재 장바구니 정보를 가져옵니다.
      */
-    public GetCartDto getCartItem(HttpServletRequest request, String token) {
+    public GetCartDto getCartItem(HttpServletRequest request, HttpServletResponse res, String token) {
         String loginId = getLoginId(token);
 
         Set<AddToCartDto.Response> responseSet;
         if (!StringUtils.hasText(loginId)) {
             responseSet = getCartFromCookie(request);
         } else {
-            responseSet = getCartFromRedis(loginId, request);
+            responseSet = getCartFromRedis(loginId, request, res);
         }
 
         if (responseSet == null || responseSet.isEmpty()) {
@@ -153,7 +153,6 @@ public class CartService {
             HttpServletRequest request,
             HttpServletResponse response,
             AddToCartDto.Response cartDtoResponse) {
-
         String prevCart = getEncodedCartItemsFromCookie(request);
         try {
             if (!StringUtils.hasText(prevCart)) {
@@ -169,11 +168,27 @@ public class CartService {
             } else {
                 String prevCartDecode = aesUtil.decrypt(prevCart);
                 Set<AddToCartDto.Response> cartItems = objectMapper.readValue(prevCartDecode, new TypeReference<>(){});
-                checkDuplicateItemInCart(cartDtoResponse, cartItems);
-                cartItems.add(cartDtoResponse);
+                boolean alreadyExist = false;
+                for (AddToCartDto.Response cartItem : cartItems) {
+                    if (cartItem.getItemId().equals(cartDtoResponse.getItemId())) {
+                        cartItem.setCount(cartDtoResponse.getCount());
+                        alreadyExist = true;
+                        break;
+                    }
+                }
+                if (!alreadyExist) {
+                    cartItems.add(cartDtoResponse);
+                }
+
                 String updatedJson = objectMapper.writeValueAsString(cartItems);
                 String updatedEncrypted = aesUtil.encrypt(updatedJson);
-                Cookie cookie = new Cookie(CART_ITEMS, updatedEncrypted);
+
+                Cookie cookie = new Cookie(CART_ITEMS, "");
+                cookie.setMaxAge(0);
+                cookie.setPath("/");
+                response.addCookie(cookie);
+
+                cookie = new Cookie(CART_ITEMS, updatedEncrypted);
                 cookie.setMaxAge(CART_EXPIRE_TIME);
                 cookie.setPath("/");
                 response.addCookie(cookie);
@@ -196,10 +211,10 @@ public class CartService {
             try {
                 String prevCartDecode = aesUtil.decrypt(prevCart);
                 prevCartItems = objectMapper.readValue(prevCartDecode, new TypeReference<>() {});
-                checkDuplicateItemInCart(cartDtoResponse, prevCartItems);
-                prevCartItems.add(cartDtoResponse);
+
                 Cookie cookie = new Cookie(CART_ITEMS, "");
                 cookie.setMaxAge(0);
+                cookie.setPath("/");
                 response.addCookie(cookie);
             } catch (ItemException e) {
                 throw new ItemException(ErrorCode.ALREADY_EXIST_ITEM_TO_CART);
@@ -218,7 +233,17 @@ public class CartService {
             cartItems.addAll(prevCartItems);
         }
 
-        cartItems.add(cartDtoResponse);
+        boolean itemExist = false;
+        for (AddToCartDto.Response cartItem : cartItems) {
+            if (cartItem.getItemId().equals(cartDtoResponse.getItemId())) {
+                cartItem.setCount(cartDtoResponse.getCount());
+                itemExist = true;
+                break;
+            }
+        }
+        if (!itemExist) {
+            cartItems.add(cartDtoResponse);
+        }
         hashOperations.put(CART_ITEMS, loginId, cartItems);
         redisTemplate.expire(CART_ITEMS, 1, TimeUnit.DAYS);
     }
@@ -244,7 +269,7 @@ public class CartService {
     /**
      * Redis에서 장바구니 정보를 가져옵니다.
      */
-    private Set<AddToCartDto.Response> getCartFromRedis(String loginId, HttpServletRequest request) {
+    private Set<AddToCartDto.Response> getCartFromRedis(String loginId, HttpServletRequest request, HttpServletResponse response) {
         Set<AddToCartDto.Response> addToCartDtoFromCookie = getCartFromCookie(request);
         HashOperations<String, String, Set<AddToCartDto.Response>> hashOperations = redisTemplate.opsForHash();
 
@@ -253,6 +278,10 @@ public class CartService {
         }
 
         hashOperations.put(CART_ITEMS, loginId, addToCartDtoFromCookie);
+        Cookie cookie = new Cookie(CART_ITEMS, "");
+        cookie.setMaxAge(0);
+        cookie.setPath("/");
+        response.addCookie(cookie);
         return hashOperations.get(CART_ITEMS, loginId);
     }
 
@@ -286,8 +315,8 @@ public class CartService {
             String updatedCart = objectMapper.writeValueAsString(cartItems);
             String encryptedCart = aesUtil.encrypt(updatedCart);
             Cookie cartCookie = new Cookie(CART_ITEMS, encryptedCart);
-            cartCookie.setPath("/");
             cartCookie.setMaxAge(CART_EXPIRE_TIME);
+            cartCookie.setPath("/");
             response.addCookie(cartCookie);
         } catch (Exception e) {
             throw new CartException(ErrorCode.CANNOT_EDIT_CART_ITEM);
@@ -348,12 +377,21 @@ public class CartService {
             return false;
         }
 
+        if (cartDtoSetFromCookie.isEmpty()) {
+            Cookie cookie = new Cookie(CART_ITEMS, "");
+            cookie.setMaxAge(0);
+            cookie.setPath("/");
+            response.addCookie(cookie);
+            return true;
+        }
+
         try {
             String jsonSet = objectMapper.writeValueAsString(cartDtoSetFromCookie);
             String encryptJsonSet = aesUtil.encrypt(jsonSet);
             Cookie cookie = new Cookie(CART_ITEMS, encryptJsonSet);
-            response.addCookie(cookie);
             cookie.setMaxAge(60 * 60 * 24);
+            cookie.setPath("/");
+            response.addCookie(cookie);
         } catch (Exception e) {
             throw new CartException(ErrorCode.CANNOT_DELETE_CART_ITEM);
         }
@@ -403,17 +441,6 @@ public class CartService {
         }
 
         return cookieValue;
-    }
-
-    /**
-     * 장바구니에 아이템 중복을 확인합니다.
-     */
-    private void checkDuplicateItemInCart(AddToCartDto.Response cartDtoResponse, Set<AddToCartDto.Response> cartItems) {
-        boolean itemExists = cartItems.stream()
-                .anyMatch(item -> item.getItemId().equals(cartDtoResponse.getItemId()));
-        if (itemExists) {
-            throw new ItemException(ErrorCode.ALREADY_EXIST_ITEM_TO_CART);
-        }
     }
 
     /**
