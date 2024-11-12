@@ -1,10 +1,18 @@
 package hmw.ecommerce.entity;
 
+import hmw.ecommerce.entity.dto.review.UpdateReviewDto;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotEmpty;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Review extends BaseEntity{
 
     @Id
@@ -23,4 +31,16 @@ public class Review extends BaseEntity{
     private int rating;
     private String comment;
 
+    public void updateReview(UpdateReviewDto request) {
+        this.setComment(request.getComment());
+        this.setRating(request.getRating());
+    }
+
+    private void setComment(String comment) {
+        this.comment = comment;
+    }
+
+    private void setRating(int rating) {
+        this.rating = rating;
+    }
 }
