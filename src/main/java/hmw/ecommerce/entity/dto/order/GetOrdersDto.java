@@ -24,7 +24,9 @@ public class GetOrdersDto {
     public static class Response {
         @DateTimeFormat(pattern = "yyyy-MM-dd")
         private LocalDateTime orderDate;
-
+        private Long orderId;
+        private Long itemId;
+        private Long orderItemId;
         private String itemName;
         private int price;
         private int count;
@@ -32,10 +34,13 @@ public class GetOrdersDto {
 
         public static Response fromEntity(OrderItem orderItem) {
             return Response.builder()
+                    .orderId(orderItem.getItem().getId())
+                    .itemId(orderItem.getItem().getId())
+                    .orderItemId(orderItem.getId())
                     .orderDate(orderItem.getOrderDate())
                     .itemName(orderItem.getItemName())
-                    .price(orderItem.getOrderPrice())
-                    .count(orderItem.getOrderQuantity())
+                    .price(orderItem.getUnitPrice())
+                    .count(orderItem.getUnitCount())
                     .orderStatus(orderItem.getOrderStatus())
                     .build();
         }

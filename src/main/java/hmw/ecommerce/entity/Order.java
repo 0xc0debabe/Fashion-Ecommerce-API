@@ -1,6 +1,8 @@
 package hmw.ecommerce.entity;
 
 import hmw.ecommerce.entity.vo.OrderStatus;
+import hmw.ecommerce.exception.ErrorCode;
+import hmw.ecommerce.exception.exceptions.OrderException;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -44,5 +46,17 @@ public class Order extends BaseEntity {
                 .member(member)
                 .build();
     }
+
+    public void cancel(OrderItem orderItem) {
+        if (this.orderStatus == OrderStatus.CANCELED) {
+            throw new OrderException(ErrorCode.ALREADY_CANCELED);
+        }
+
+        this.orderStatus = OrderStatus.CANCELED;
+
+        orderItem.orderCancel();
+    }
+
+
 }
 

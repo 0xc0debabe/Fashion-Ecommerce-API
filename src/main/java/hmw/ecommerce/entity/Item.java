@@ -55,6 +55,10 @@ public class Item extends BaseEntity{
         this.stockQuantity -= count;
     }
 
+    public void increaseStock(int count) {
+        this.stockQuantity += count;
+    }
+
     public boolean isStockAvailability(int count) {
         if (this.getStockQuantity() - count < 0) {
             return false;

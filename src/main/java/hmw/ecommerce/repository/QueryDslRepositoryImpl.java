@@ -6,7 +6,9 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import hmw.ecommerce.entity.Item;
+import hmw.ecommerce.entity.OrderItem;
 import hmw.ecommerce.entity.QCategory;
+import hmw.ecommerce.entity.QOrderItem;
 import jakarta.persistence.EntityManager;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -21,6 +23,7 @@ import java.util.Set;
 import static hmw.ecommerce.entity.QCategory.category;
 import static hmw.ecommerce.entity.QCategoryType.categoryType;
 import static hmw.ecommerce.entity.QItem.item;
+import static hmw.ecommerce.entity.QOrderItem.*;
 
 @Slf4j
 public class QueryDslRepositoryImpl implements QueryDslRepository {
@@ -92,6 +95,19 @@ public class QueryDslRepositoryImpl implements QueryDslRepository {
                 );
 
         return PageableExecutionUtils.getPage(items, pageable, countQuery::fetchOne);
+    }
+
+    @Override
+    public Optional<OrderItem> findOrderItemByLoginId(String loginId, Long itemId, Long orderId) {
+        return Optional.ofNullable(
+                queryFactory
+                        .selectFrom(orderItem)
+                        .leftJoin(orderItem.order).fetchJoin()
+                        .leftJoin(orderItem.item).fetchJoin()
+                        .where(orderItem.loginId.eq(loginId))
+                        .where(orderItem.item.id.eq(itemId))
+                        .where(orderItem.order.id.eq(orderId))
+                        .fetchOne());
     }
 
     private BooleanExpression categoryNameEq(String categoryName) {

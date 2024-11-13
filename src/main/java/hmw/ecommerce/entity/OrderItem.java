@@ -1,6 +1,8 @@
 package hmw.ecommerce.entity;
 
 import hmw.ecommerce.entity.vo.OrderStatus;
+import hmw.ecommerce.exception.ErrorCode;
+import hmw.ecommerce.exception.exceptions.OrderException;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -30,8 +32,8 @@ public class OrderItem extends BaseEntity{
     private Item item;
 
     private String loginId;
-    private int orderQuantity;
-    private int orderPrice;
+    private int unitCount;
+    private int unitPrice;
     private String itemName;
     private OrderStatus orderStatus;
     private LocalDateTime orderDate;
@@ -40,12 +42,21 @@ public class OrderItem extends BaseEntity{
         return OrderItem.builder()
                 .order(order)
                 .item(item)
-                .orderQuantity(count)
-                .orderPrice(price)
+                .unitCount(count)
+                .unitPrice(price)
                 .itemName(item.getItemName())
                 .orderStatus(OrderStatus.ORDERED)
                 .orderDate(order.getOrderDate())
                 .loginId(loginId)
                 .build();
     }
+
+    public void orderCancel() {
+        if (this.orderStatus == OrderStatus.CANCELED) {
+            throw new OrderException(ErrorCode.ALREADY_CANCELED);
+        }
+
+        this.orderStatus = OrderStatus.CANCELED;
+    }
+
 }

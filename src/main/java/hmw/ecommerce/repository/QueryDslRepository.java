@@ -1,6 +1,7 @@
 package hmw.ecommerce.repository;
 
 import hmw.ecommerce.entity.Item;
+import hmw.ecommerce.entity.OrderItem;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -17,4 +18,6 @@ public interface QueryDslRepository {
     Optional<Item> findItemFetchMemberAndCategoryByItemId(Long itemId);
 
     Page<Item> findItemByCategoryAndType(String categoryName, String categoryType, Pageable pageable);
+
+    Optional<OrderItem> findOrderItemByLoginId(String loginId, Long itemId, Long orderId);
 }
