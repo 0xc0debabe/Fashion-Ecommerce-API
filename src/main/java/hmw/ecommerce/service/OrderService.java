@@ -5,6 +5,7 @@ import hmw.ecommerce.entity.Member;
 import hmw.ecommerce.entity.Order;
 import hmw.ecommerce.entity.OrderItem;
 import hmw.ecommerce.entity.dto.cart.AddToCartDto;
+import hmw.ecommerce.entity.dto.order.CancelOrderDto;
 import hmw.ecommerce.entity.dto.order.CreateOrderDto;
 import hmw.ecommerce.entity.dto.order.GetOrdersDto;
 import hmw.ecommerce.entity.vo.OrderStatus;
@@ -54,6 +55,10 @@ public class OrderService {
             return createOrderFromCart(findMember, loginId);
         }
 
+        if (orderDto.getCount() == 0) {
+            throw new OrderException(ErrorCode.ORDER_NOT_ALLOWED);
+        }
+
         return orderFromItemDetail(orderDto, findMember);
     }
 
@@ -63,11 +68,31 @@ public class OrderService {
         int size = dtoRequest.getSize();
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("orderDate").descending());
-        Page<OrderItem> orderItems = orderItemRepository.findByLoginId(loginId, pageable);
+        Page<OrderItem> orderItems = orderItemRepository.findOrderItemsByLoginId(loginId, pageable);
         return orderItems
                 .stream()
                 .map(GetOrdersDto.Response::fromEntity).
                 collect(Collectors.toList());
+    }
+
+    public Long cancelOrder(String token, CancelOrderDto cancelOrderDto) {
+        String loginId = jwtUtil.extractLoginIdFromToken(token);
+
+        OrderItem orderItem = orderItemRepository
+                .findOrderItemByLoginId(
+                        loginId,
+                        cancelOrderDto.getItemId(),
+                        cancelOrderDto.getOrderId()
+                ).orElseThrow(() -> new OrderException(ErrorCode.NOT_FOUND_ORDER));
+
+        if (!orderItem.getOrder().getMember().getLoginId().equals(loginId)) {
+            throw new OrderException(ErrorCode.CAN_NOT_ORDER_CANCEL);
+        }
+
+        orderItem.getOrder().cancel(orderItem);
+        orderItem.getItem().increaseStock(orderItem.getUnitCount());
+
+        return orderItem.getOrder().getId();
     }
 
     private Long orderFromItemDetail(CreateOrderDto orderDto, Member findMember) {
@@ -85,12 +110,13 @@ public class OrderService {
                 Order.createOrder(
                         findMember,
                         count,
-                        findItem.getPrice(),
+                        findItem.getPrice() * count,
                         OrderStatus.ORDERED));
 
         orderItemRepository.save(
-                OrderItem.toEntity(savedOrder, findItem, count, count * savedOrder.getPrice(), findMember.getLoginId())
+                OrderItem.toEntity(savedOrder, findItem, count, count * findItem.getPrice(), findMember.getLoginId())
         );
+
         findItem.decreaseStock(count);
 
         return savedOrder.getId();
@@ -169,5 +195,6 @@ public class OrderService {
     private boolean orderFromCart(CreateOrderDto request) {
         return request.getItemId() == null;
     }
+
 
 }

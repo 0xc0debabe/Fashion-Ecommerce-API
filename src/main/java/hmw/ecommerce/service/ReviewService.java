@@ -9,7 +9,7 @@ import hmw.ecommerce.entity.dto.review.UpdateReviewDto;
 import hmw.ecommerce.exception.ErrorCode;
 import hmw.ecommerce.exception.ItemException;
 import hmw.ecommerce.exception.MemberException;
-import hmw.ecommerce.exception.ReviewException;
+import hmw.ecommerce.exception.exceptions.ReviewException;
 import hmw.ecommerce.jwt.JWTUtil;
 import hmw.ecommerce.repository.ReviewRepository;
 import hmw.ecommerce.repository.entity.ItemRepository;
