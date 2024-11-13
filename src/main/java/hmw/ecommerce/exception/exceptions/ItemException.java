@@ -1,5 +1,6 @@
-package hmw.ecommerce.exception;
+package hmw.ecommerce.exception.exceptions;
 
+import hmw.ecommerce.exception.ErrorCode;
 import lombok.Getter;
 
 @Getter

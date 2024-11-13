@@ -5,7 +5,7 @@ import hmw.ecommerce.entity.dto.member.CustomUserDetails;
 import hmw.ecommerce.entity.dto.member.LoginDto;
 import hmw.ecommerce.entity.vo.Const;
 import hmw.ecommerce.exception.ErrorCode;
-import hmw.ecommerce.exception.ParseException;
+import hmw.ecommerce.exception.exceptions.ParseException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

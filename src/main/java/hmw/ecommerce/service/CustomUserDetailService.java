@@ -3,7 +3,7 @@ package hmw.ecommerce.service;
 import hmw.ecommerce.entity.Member;
 import hmw.ecommerce.entity.dto.member.CustomUserDetails;
 import hmw.ecommerce.exception.ErrorCode;
-import hmw.ecommerce.exception.MemberException;
+import hmw.ecommerce.exception.exceptions.MemberException;
 import hmw.ecommerce.repository.entity.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
