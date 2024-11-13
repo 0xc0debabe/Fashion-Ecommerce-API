@@ -5,6 +5,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
-    Page<OrderItem> findByLoginId(String loginId, Pageable pageable);
+import java.util.Optional;
+
+public interface OrderItemRepository extends JpaRepository<OrderItem, Long>, QueryDslRepository {
+    Page<OrderItem> findOrderItemsByLoginId(String loginId, Pageable pageable);
+
 }

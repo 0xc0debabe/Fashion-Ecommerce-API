@@ -40,6 +40,9 @@ public enum ErrorCode {
 
     // 주문 예외
     ORDER_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "주문을 진행할 수 없습니다."),
+    CAN_NOT_ORDER_CANCEL(HttpStatus.BAD_REQUEST, "주문을 취소할 수 없습니다."),
+    NOT_FOUND_ORDER(HttpStatus.BAD_REQUEST, "해당 주문을 찾을 수 없습니다."),
+    ALREADY_CANCELED(HttpStatus.BAD_REQUEST, "해당 주문은 이미 취소되었습니다."),
 
     // 기타 예외
     FAIL_TO_PARSE(HttpStatus.BAD_REQUEST, "파싱하는데 실패하였습니다."),
