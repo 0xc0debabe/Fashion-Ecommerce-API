@@ -1,6 +1,7 @@
 package hmw.ecommerce.repository;
 
 import hmw.ecommerce.entity.Item;
+import hmw.ecommerce.entity.Review;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -17,4 +18,12 @@ public interface QueryDslRepository {
     Optional<Item> findItemFetchMemberAndCategoryByItemId(Long itemId);
 
     Page<Item> findItemByCategoryAndType(String categoryName, String categoryType, Pageable pageable);
+
+    Page<Review> findReviewLatestByItemId(Long itemId, Pageable pageable);
+
+    Page<Review> findReviewOldestByItemId(Long itemId, Pageable pageable);
+
+    Page<Review> findReviewsRatingAscByItemId(Long itemId, Pageable pageable);
+
+    Page<Review> findReviewsRatingDescByItemId(Long itemId, Pageable pageable);
 }
