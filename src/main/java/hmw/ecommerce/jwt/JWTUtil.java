@@ -1,7 +1,7 @@
 package hmw.ecommerce.jwt;
 
 import hmw.ecommerce.entity.vo.Const;
-import hmw.ecommerce.exception.AuthException;
+import hmw.ecommerce.exception.exceptions.AuthException;
 import hmw.ecommerce.exception.ErrorCode;
 import io.jsonwebtoken.*;
 import lombok.extern.slf4j.Slf4j;

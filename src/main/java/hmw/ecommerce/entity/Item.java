@@ -51,6 +51,10 @@ public class Item extends BaseEntity{
         this.stockQuantity = updateForm.getStockQuantity();
     }
 
+    public void decreaseStock(int count) {
+        this.stockQuantity -= count;
+    }
+
     public boolean isStockAvailability(int count) {
         if (this.getStockQuantity() - count < 0) {
             return false;

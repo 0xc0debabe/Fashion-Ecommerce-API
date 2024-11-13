@@ -1,5 +1,5 @@
 package hmw.ecommerce.entity.vo;
 
 public enum OrderStatus {
-    ORDERED, CANCELED
+    ORDERED, CANCELED, SHIPPED, DELIVERED
 }

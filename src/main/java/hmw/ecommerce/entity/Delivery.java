@@ -1,7 +1,7 @@
 package hmw.ecommerce.entity;
 
 import hmw.ecommerce.entity.vo.Address;
-import hmw.ecommerce.entity.vo.DeliveryStatus;
+import hmw.ecommerce.entity.vo.OrderStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 
@@ -22,6 +22,6 @@ public class Delivery extends BaseEntity{
     private Address address;
 
     @Enumerated(EnumType.STRING)
-    private DeliveryStatus deliveryStatus;
+    private OrderStatus deliveryStatus;
 
 }
