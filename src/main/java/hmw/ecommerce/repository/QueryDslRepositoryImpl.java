@@ -1,15 +1,15 @@
 package hmw.ecommerce.repository;
 
 import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import hmw.ecommerce.entity.*;
+import hmw.ecommerce.entity.dto.order.GetSellOrderDto;
+import hmw.ecommerce.entity.vo.OrderStatus;
 import jakarta.persistence.EntityManager;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.util.StringUtils;
@@ -17,7 +17,6 @@ import org.springframework.util.StringUtils;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static hmw.ecommerce.entity.QCategory.category;
 import static hmw.ecommerce.entity.QCategoryType.categoryType;
@@ -179,16 +178,70 @@ public class QueryDslRepositoryImpl implements QueryDslRepository {
     }
 
     @Override
-    public Optional<OrderItem> findOrderItemByLoginId(String loginId, Long itemId, Long orderId) {
+    public Page<OrderItem> findSellLatestBySellerId(String sellerId, GetSellOrderDto.Request request, Pageable pageable) {
+        List<OrderItem> orderItems =
+                queryFactory
+                        .selectFrom(orderItem)
+                .where(
+                        orderItem.sellerId.eq(sellerId),
+                        orderStatusEq(request)
+                )
+                .orderBy(orderItem.createdAt.desc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        JPAQuery<Long> countQuery = queryFactory.select(orderItem.count())
+                .from(orderItem)
+                .where(
+                        orderItem.sellerId.eq(sellerId),
+                        orderStatusEq(request)
+                );
+
+        return PageableExecutionUtils.getPage(orderItems, pageable, countQuery::fetchOne);
+    }
+
+    @Override
+    public Optional<OrderItem> findOrderItemByBuyerId(String buyerId, Long itemId, Long orderId) {
         return Optional.ofNullable(
                 queryFactory
                         .selectFrom(orderItem)
                         .leftJoin(orderItem.order).fetchJoin()
                         .leftJoin(orderItem.item).fetchJoin()
-                        .where(orderItem.loginId.eq(loginId))
+                        .where(orderItem.buyerId.eq(buyerId))
                         .where(orderItem.item.id.eq(itemId))
                         .where(orderItem.order.id.eq(orderId))
                         .fetchOne());
+    }
+
+    @Override
+    public Optional<OrderItem> findOrderItemBySellerId(String sellerId, Long itemId, Long orderId) {
+        return Optional.ofNullable(
+                queryFactory
+                        .selectFrom(orderItem)
+                        .leftJoin(orderItem.order).fetchJoin()
+                        .leftJoin(orderItem.item).fetchJoin()
+                        .where(orderItem.sellerId.eq(sellerId))
+                        .where(orderItem.item.id.eq(itemId))
+                        .where(orderItem.order.id.eq(orderId))
+                        .fetchOne());
+    }
+
+
+    private BooleanBuilder orderStatusEq(GetSellOrderDto.Request request) {
+        BooleanBuilder builder = new BooleanBuilder();
+
+        if (Boolean.TRUE.equals(request.getPending())) {
+            builder.or(orderItem.orderStatus.eq(OrderStatus.PENDING));
+        }
+        if (Boolean.TRUE.equals(request.getCanceled())) {
+            builder.or(orderItem.orderStatus.eq(OrderStatus.CANCELED));
+        }
+        if (Boolean.TRUE.equals(request.getCompleted())) {
+            builder.or(orderItem.orderStatus.eq(OrderStatus.COMPLETED));
+        }
+
+        return builder;
     }
 
     private BooleanExpression categoryNameEq(String categoryName) {

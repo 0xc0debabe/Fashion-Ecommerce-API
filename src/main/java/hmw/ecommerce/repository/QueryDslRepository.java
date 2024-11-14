@@ -3,6 +3,7 @@ package hmw.ecommerce.repository;
 import hmw.ecommerce.entity.Item;
 import hmw.ecommerce.entity.OrderItem;
 import hmw.ecommerce.entity.Review;
+import hmw.ecommerce.entity.dto.order.GetSellOrderDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -28,5 +29,9 @@ public interface QueryDslRepository {
 
     Page<Review> findReviewsRatingDescByItemId(Long itemId, Pageable pageable);
 
-    Optional<OrderItem> findOrderItemByLoginId(String loginId, Long itemId, Long orderId);
+    Optional<OrderItem> findOrderItemByBuyerId(String loginId, Long itemId, Long orderId);
+
+    Optional<OrderItem> findOrderItemBySellerId(String sellerId, Long itemId, Long orderId);
+
+    Page<OrderItem> findSellLatestBySellerId(String loginId, GetSellOrderDto.Request request, Pageable pageable);
 }

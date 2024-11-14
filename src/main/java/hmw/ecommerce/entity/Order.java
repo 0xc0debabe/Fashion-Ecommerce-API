@@ -37,6 +37,7 @@ public class Order extends BaseEntity {
     @JoinColumn(name = "member_id")
     private Member member;
 
+
     public static Order createOrder(Member member, int count, int price, OrderStatus orderStatus) {
         return Order.builder()
                 .count(count)
@@ -55,6 +56,16 @@ public class Order extends BaseEntity {
         this.orderStatus = OrderStatus.CANCELED;
 
         orderItem.orderCancel();
+    }
+
+    public void complete(OrderItem orderItem) {
+        if (this.orderStatus == OrderStatus.COMPLETED) {
+            throw new OrderException(ErrorCode.ALREADY_CANCELED);
+        }
+
+        this.orderStatus = OrderStatus.COMPLETED;
+
+        orderItem.orderComplete();
     }
 
 

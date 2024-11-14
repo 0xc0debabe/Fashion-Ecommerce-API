@@ -21,6 +21,7 @@ import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -70,6 +71,7 @@ public class ItemService {
     }
 
     private Map<Long, ItemThumbnailResponseDto> getTop15ItemsToMap(HashOperations<String, Long, Object> hashOperations) {
+
         return hashOperations.entries(TOP_RANKING_ITEM_KEY).entrySet().stream()
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
@@ -158,7 +160,6 @@ public class ItemService {
         Category category = categoryRepository.findByCategoryName(categoryName)
                 .orElseGet(() -> categoryRepository.save(Category.builder()
                         .categoryName(categoryName)
-//                        .categoryTypes(new ArrayList<>())
                         .build()));
 
         String type = itemRegisterDto.getType();

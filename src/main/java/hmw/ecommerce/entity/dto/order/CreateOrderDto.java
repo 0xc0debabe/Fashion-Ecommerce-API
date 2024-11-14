@@ -7,6 +7,6 @@ import lombok.Getter;
 public class CreateOrderDto {
 
     private Long itemId;
-    private int count;
+    private Integer count;
 
 }

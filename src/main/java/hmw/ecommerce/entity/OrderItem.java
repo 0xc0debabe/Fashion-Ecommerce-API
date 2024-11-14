@@ -31,7 +31,8 @@ public class OrderItem extends BaseEntity{
     @JoinColumn(name = "item_id")
     private Item item;
 
-    private String loginId;
+    private String buyerId;
+    private String sellerId;
     private int unitCount;
     private int unitPrice;
     private String itemName;
@@ -45,9 +46,10 @@ public class OrderItem extends BaseEntity{
                 .unitCount(count)
                 .unitPrice(price)
                 .itemName(item.getItemName())
-                .orderStatus(OrderStatus.ORDERED)
+                .orderStatus(OrderStatus.PENDING)
                 .orderDate(order.getOrderDate())
-                .loginId(loginId)
+                .buyerId(loginId)
+                .sellerId(item.getMember().getLoginId())
                 .build();
     }
 
@@ -59,4 +61,11 @@ public class OrderItem extends BaseEntity{
         this.orderStatus = OrderStatus.CANCELED;
     }
 
+    public void orderComplete() {
+        if (this.orderStatus == OrderStatus.COMPLETED) {
+            throw new OrderException(ErrorCode.ALREADY_COMPLETED);
+        }
+
+        this.orderStatus = OrderStatus.COMPLETED;
+    }
 }

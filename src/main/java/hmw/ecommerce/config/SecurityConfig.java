@@ -84,6 +84,7 @@ public class SecurityConfig {
                                 "/",
                                 "/member/login").permitAll()
                         .requestMatchers(HttpMethod.GET, "/item/*").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/item").permitAll()
                         .requestMatchers("/cart/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/test/remove").permitAll()
                         .requestMatchers(

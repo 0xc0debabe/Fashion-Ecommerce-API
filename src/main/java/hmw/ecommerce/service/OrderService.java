@@ -5,17 +5,15 @@ import hmw.ecommerce.entity.Member;
 import hmw.ecommerce.entity.Order;
 import hmw.ecommerce.entity.OrderItem;
 import hmw.ecommerce.entity.dto.cart.AddToCartDto;
-import hmw.ecommerce.entity.dto.order.CancelOrderDto;
-import hmw.ecommerce.entity.dto.order.CreateOrderDto;
-import hmw.ecommerce.entity.dto.order.GetOrdersDto;
+import hmw.ecommerce.entity.dto.order.*;
 import hmw.ecommerce.entity.vo.OrderStatus;
 import hmw.ecommerce.exception.ErrorCode;
 import hmw.ecommerce.exception.exceptions.ItemException;
 import hmw.ecommerce.exception.exceptions.MemberException;
 import hmw.ecommerce.exception.exceptions.OrderException;
 import hmw.ecommerce.jwt.JWTUtil;
-import hmw.ecommerce.repository.OrderItemRepository;
-import hmw.ecommerce.repository.OrderRepository;
+import hmw.ecommerce.repository.entity.OrderItemRepository;
+import hmw.ecommerce.repository.entity.OrderRepository;
 import hmw.ecommerce.repository.entity.ItemRepository;
 import hmw.ecommerce.repository.entity.MemberRepository;
 import lombok.RequiredArgsConstructor;
@@ -55,20 +53,21 @@ public class OrderService {
             return createOrderFromCart(findMember, loginId);
         }
 
-        if (orderDto.getCount() == 0) {
+        if (orderDto.getCount() == null || orderDto.getItemId() == null) {
             throw new OrderException(ErrorCode.ORDER_NOT_ALLOWED);
         }
 
         return orderFromItemDetail(orderDto, findMember);
     }
 
+    @Transactional(readOnly = true)
     public List<GetOrdersDto.Response> getOrders(String token, GetOrdersDto.Request dtoRequest) {
-        String loginId = jwtUtil.extractLoginIdFromToken(token);
+        String buyerId = jwtUtil.extractLoginIdFromToken(token);
         int page = dtoRequest.getPage();
         int size = dtoRequest.getSize();
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("orderDate").descending());
-        Page<OrderItem> orderItems = orderItemRepository.findOrderItemsByLoginId(loginId, pageable);
+        Page<OrderItem> orderItems = orderItemRepository.findOrderItemsByBuyerId(buyerId, pageable);
         return orderItems
                 .stream()
                 .map(GetOrdersDto.Response::fromEntity).
@@ -79,7 +78,7 @@ public class OrderService {
         String loginId = jwtUtil.extractLoginIdFromToken(token);
 
         OrderItem orderItem = orderItemRepository
-                .findOrderItemByLoginId(
+                .findOrderItemByBuyerId(
                         loginId,
                         cancelOrderDto.getItemId(),
                         cancelOrderDto.getOrderId()
@@ -93,6 +92,32 @@ public class OrderService {
         orderItem.getItem().increaseStock(orderItem.getUnitCount());
 
         return orderItem.getOrder().getId();
+    }
+
+    @Transactional(readOnly = true)
+    public List<GetSellOrderDto.Response> getSellOrder(GetSellOrderDto.Request orderDto, String token) {
+        String loginId = jwtUtil.extractLoginIdFromToken(token);
+        int page = orderDto.getPage();
+        int size = orderDto.getSize();
+        Pageable pageable = PageRequest.of(page, size);
+        Page<OrderItem> orderItems = orderItemRepository.findSellLatestBySellerId(loginId, orderDto, pageable);
+        return orderItems
+                .map(GetSellOrderDto.Response::fromEntity)
+                .toList();
+    }
+
+    public Long completeOrder(CompleteOrderDto completeOrderDto, String token) {
+        String sellerId = jwtUtil.extractLoginIdFromToken(token);
+        Long itemId = completeOrderDto.getItemId();
+        Long orderId = completeOrderDto.getOrderId();
+
+        OrderItem orderItem = orderItemRepository
+                .findOrderItemBySellerId(sellerId, itemId, orderId)
+                .orElseThrow(() -> new OrderException(ErrorCode.NOT_FOUND_ORDER));
+
+        Order order = orderItem.getOrder();
+        order.complete(orderItem);
+        return order.getId();
     }
 
     private Long orderFromItemDetail(CreateOrderDto orderDto, Member findMember) {
@@ -111,7 +136,7 @@ public class OrderService {
                         findMember,
                         count,
                         findItem.getPrice() * count,
-                        OrderStatus.ORDERED));
+                        OrderStatus.PENDING));
 
         orderItemRepository.save(
                 OrderItem.toEntity(savedOrder, findItem, count, count * findItem.getPrice(), findMember.getLoginId())
@@ -124,14 +149,12 @@ public class OrderService {
 
 
     private Long createOrderFromCart(Member findMember, String loginId) {
-        // 개별 주문이 아닐때(장바구니 주문일때)
         HashOperations<String, String, Set<AddToCartDto.Response>> hashOperations = redisTemplate.opsForHash();
         Set<AddToCartDto.Response> cartItems = hashOperations.get(CART_ITEMS, loginId);
         if (cartItems == null || cartItems.isEmpty()) {
             throw new OrderException(ErrorCode.ORDER_NOT_ALLOWED);
         }
 
-        // 한번에 끌어오지 않으면 장바구니 개수당 repository 접근하므로 이렇게 작성함
         Set<Long> itemIds = cartItems.stream()
                 .map(AddToCartDto.Response::getItemId)
                 .collect(Collectors.toSet());
@@ -168,7 +191,7 @@ public class OrderService {
                         findMember,
                         totalCount,
                         totalPrice,
-                        OrderStatus.ORDERED)
+                        OrderStatus.PENDING)
         );
 
 
@@ -193,8 +216,10 @@ public class OrderService {
     }
 
     private boolean orderFromCart(CreateOrderDto request) {
-        return request.getItemId() == null;
+        return request.getItemId() == null && request.getCount() == null;
     }
+
+
 
 
 }
