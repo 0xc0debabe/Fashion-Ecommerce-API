@@ -62,10 +62,15 @@ public class OrderItem extends BaseEntity{
     }
 
     public void orderComplete() {
+        if (this.orderStatus == OrderStatus.CANCELED) {
+            throw new OrderException(ErrorCode.ALREADY_CANCELED);
+        }
+
         if (this.orderStatus == OrderStatus.COMPLETED) {
             throw new OrderException(ErrorCode.ALREADY_COMPLETED);
         }
 
         this.orderStatus = OrderStatus.COMPLETED;
     }
+
 }

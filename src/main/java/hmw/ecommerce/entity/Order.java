@@ -9,7 +9,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -49,22 +48,12 @@ public class Order extends BaseEntity {
     }
 
     public void cancel(OrderItem orderItem) {
-        if (this.orderStatus == OrderStatus.CANCELED) {
-            throw new OrderException(ErrorCode.ALREADY_CANCELED);
-        }
-
         this.orderStatus = OrderStatus.CANCELED;
-
         orderItem.orderCancel();
     }
 
     public void complete(OrderItem orderItem) {
-        if (this.orderStatus == OrderStatus.COMPLETED) {
-            throw new OrderException(ErrorCode.ALREADY_CANCELED);
-        }
-
         this.orderStatus = OrderStatus.COMPLETED;
-
         orderItem.orderComplete();
     }
 

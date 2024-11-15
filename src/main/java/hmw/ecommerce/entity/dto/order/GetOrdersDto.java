@@ -34,7 +34,7 @@ public class GetOrdersDto {
 
         public static Response fromEntity(OrderItem orderItem) {
             return Response.builder()
-                    .orderId(orderItem.getItem().getId())
+                    .orderId(orderItem.getOrder().getId())
                     .itemId(orderItem.getItem().getId())
                     .orderItemId(orderItem.getId())
                     .orderDate(orderItem.getOrderDate())
