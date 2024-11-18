@@ -20,6 +20,13 @@ public class EmailService {
     private final JavaMailSender mailSender;
     private final RedisTemplate<String, Object> redisTemplate;
 
+    /**
+     * 주어진 이메일 주소로 인증 메일을 전송합니다.
+     * 인증 코드는 10분 동안 유효하며 Redis에 저장됩니다.
+     *
+     * @param to 인증 메일을 보낼 이메일 주소
+     * @return 인증 메일을 보낸 이메일 주소
+     */
     public String sendEmail(String to) {
         MimeMessage message = mailSender.createMimeMessage();
         String code = UUID.randomUUID().toString().substring(0, 6);

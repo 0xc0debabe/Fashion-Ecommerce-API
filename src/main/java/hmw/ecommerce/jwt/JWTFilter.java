@@ -24,6 +24,15 @@ public class JWTFilter extends OncePerRequestFilter {
     private final JWTUtil jwtUtil;
     private final RedisTemplate<String, Object> redisTemplate;
 
+    /**
+     * HTTP 요청을 필터링하여 유효한 JWT 토큰을 가진 사용자인지 확인하는 메서드.
+     *
+     * @param request HTTP 요청
+     * @param response HTTP 응답
+     * @param filterChain 필터 체인
+     * @throws ServletException 서블릿 예외
+     * @throws IOException 입출력 예외
+     */
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String authorization = request.getHeader(Const.AUTHORIZATION);
@@ -37,14 +46,10 @@ public class JWTFilter extends OncePerRequestFilter {
 
         if (jwtUtil.isExpired(token)) {
             filterChain.doFilter(request, response);
-//            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-//            response.setCharacterEncoding("UTF-8");
-//            response.getWriter().write("세션이 만료되었습니다.");
             return;
         }
 
         if (isTokenBlacklisted(token)) {
-//            filterChain.doFilter(request, response);
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setCharacterEncoding("UTF-8");
             response.getWriter().write("로그아웃된 사용자입니다.");
@@ -68,7 +73,12 @@ public class JWTFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-
+    /**
+     * JWT 토큰이 블랙리스트에 포함되어 있는지 확인하는 메서드.
+     *
+     * @param token 검증할 JWT 토큰
+     * @return 토큰이 블랙리스트에 포함되어 있으면 true, 아니면 false
+     */
     private boolean isTokenBlacklisted(String token) {
         return Boolean.TRUE.equals(redisTemplate.hasKey(token));
     }

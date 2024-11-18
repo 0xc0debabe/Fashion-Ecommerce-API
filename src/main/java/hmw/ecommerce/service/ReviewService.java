@@ -31,6 +31,15 @@ public class ReviewService {
     private final ReviewRepository reviewRepository;
     private final JWTUtil jwtUtil;
 
+    /**
+     * 리뷰를 생성하는 메서드.
+     * 인증된 사용자가 상품에 대한 리뷰를 작성할 수 있습니다.
+     *
+     * @param token 로그인한 사용자의 인증 토큰 (JWT).
+     * @param reviewRequest 리뷰 생성 요청 DTO.
+     * @param itemId 리뷰 대상 상품 ID.
+     * @return 생성된 리뷰 정보.
+     */
     @Transactional
     public AddReviewDto.Response createReview(
             String token,
@@ -44,6 +53,15 @@ public class ReviewService {
         return AddReviewDto.Response.fromEntity(savedReview);
     }
 
+    /**
+     * 리뷰를 업데이트하는 메서드.
+     * 인증된 회원만 자신이 작성한 리뷰를 수정할 수 있습니다.
+     *
+     * @param token 로그인한 사용자의 인증 토큰 (JWT).
+     * @param reviewId 수정할 리뷰 ID.
+     * @param reviewRequest 리뷰 수정 요청 DTO.
+     * @return 업데이트된 리뷰 DTO.
+     */
     @Transactional
     public UpdateReviewDto updateReview(
             String token,
@@ -60,6 +78,14 @@ public class ReviewService {
         return reviewRequest;
     }
 
+    /**
+     * 리뷰를 삭제하는 메서드.
+     * 인증된 회원만 자신이 작성한 리뷰를 삭제할 수 있습니다.
+     *
+     * @param token 로그인한 사용자의 인증 토큰 (JWT).
+     * @param reviewId 삭제할 리뷰 ID.
+     * @return 삭제된 리뷰 ID.
+     */
     @Transactional
     public Long deleteReview(String token, Long reviewId) {
         String loginId = jwtUtil.extractLoginIdFromToken(token);
@@ -72,24 +98,56 @@ public class ReviewService {
         return reviewId;
     }
 
+    /**
+     * 최신 순으로 리뷰를 조회하는 메서드.
+     *
+     * @param itemId 상품 ID.
+     * @param page 페이지 번호.
+     * @param size 한 페이지당 리뷰 개수.
+     * @return 최신 순으로 정렬된 리뷰 목록.
+     */
     public Page<GetReviewDto> getReviewsByLatest(Long itemId, int page, int size) {
         Pageable pageable = PageRequest.of(page - 1, size);
         Page<Review> reviewByItem = reviewRepository.findReviewLatestByItemId(itemId, pageable);
         return reviewByItem.map(GetReviewDto::fromEntity);
     }
 
+    /**
+     * 오래된 순으로 리뷰를 조회하는 메서드.
+     *
+     * @param itemId 상품 ID.
+     * @param page 페이지 번호.
+     * @param size 한 페이지당 리뷰 개수.
+     * @return 오래된 순으로 정렬된 리뷰 목록.
+     */
     public Page<GetReviewDto> getReviewsByOldest(Long itemId, int page, int size) {
         Pageable pageable = PageRequest.of(page - 1, size);
         Page<Review> reviewByItem = reviewRepository.findReviewOldestByItemId(itemId, pageable);
         return reviewByItem.map(GetReviewDto::fromEntity);
     }
 
+    /**
+     * 평점 오름차순으로 리뷰를 조회하는 메서드.
+     *
+     * @param itemId 상품 ID.
+     * @param page 페이지 번호.
+     * @param size 한 페이지당 리뷰 개수.
+     * @return 평점 오름차순으로 정렬된 리뷰 목록.
+     */
     public Page<GetReviewDto> getReviewsByRatingAsc(Long itemId, int page, int size) {
         Pageable pageable = PageRequest.of(page - 1, size);
         Page<Review> reviewByItem = reviewRepository.findReviewsRatingAscByItemId(itemId, pageable);
         return reviewByItem.map(GetReviewDto::fromEntity);
     }
 
+    /**
+     * 평점 내림차순으로 리뷰를 조회하는 메서드.
+     *
+     * @param itemId 상품 ID.
+     * @param page 페이지 번호.
+     * @param size 한 페이지당 리뷰 개수.
+     * @return 평점 내림차순으로 정렬된 리뷰 목록.
+     */
     public Page<GetReviewDto> getReviewsByRatingDesc(Long itemId, int page, int size) {
         Pageable pageable = PageRequest.of(page - 1, size);
         Page<Review> reviewByItem = reviewRepository.findReviewsRatingDescByItemId(itemId, pageable);

@@ -48,6 +48,11 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(ReviewException.class)
+    public ResponseEntity<String> handleReviewException(ReviewException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(OrderException.class)
     public ResponseEntity<Map<String, Object>> handleOrderException(OrderException ex) {
         Map<String, Object> response = new HashMap<>();

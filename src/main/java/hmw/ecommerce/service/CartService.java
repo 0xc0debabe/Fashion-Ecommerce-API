@@ -6,8 +6,8 @@ import hmw.ecommerce.entity.Item;
 import hmw.ecommerce.entity.dto.cart.AddToCartDto;
 import hmw.ecommerce.entity.dto.cart.EditToCartDto;
 import hmw.ecommerce.entity.dto.cart.GetCartDto;
-import hmw.ecommerce.exception.exceptions.CartException;
 import hmw.ecommerce.exception.ErrorCode;
+import hmw.ecommerce.exception.exceptions.CartException;
 import hmw.ecommerce.exception.exceptions.ItemException;
 import hmw.ecommerce.jwt.JWTUtil;
 import hmw.ecommerce.repository.entity.ItemRepository;
@@ -43,6 +43,13 @@ public class CartService {
 
     /**
      * 장바구니에 아이템을 추가합니다.
+     *
+     * @param itemId       추가할 아이템의 ID
+     * @param cartRequest  장바구니 추가 요청 데이터
+     * @param token        사용자 인증 토큰
+     * @param request      로그인 상태가 아닌 경우 쿠키에 넣기 위해 가져옴
+     * @param response     로그인 상태가 아닌 경우 쿠키에 넣기 위해 가져옴
+     * @return 추가된 장바구니 아이템 정보
      */
     public AddToCartDto.Response addToCart(
             Long itemId,
@@ -71,6 +78,11 @@ public class CartService {
 
     /**
      * 현재 장바구니 정보를 가져옵니다.
+     *
+     * @param request  로그인 상태가 아닌 경우 쿠키에서 들고오기 위해 가져옴
+     * @param res      로그인 상태가 아닌 경우 쿠키에서 들고오기 위해 가져옴
+     * @param token    사용자 인증 토큰
+     * @return 장바구니에 담긴 아이템 목록과 총 가격 및 수량
      */
     @Transactional(readOnly = true)
     public GetCartDto getCartItem(HttpServletRequest request, HttpServletResponse res, String token) {
@@ -99,6 +111,13 @@ public class CartService {
 
     /**
      * 장바구니 아이템을 수정합니다.
+     *
+     * @param itemId       수정할 아이템의 ID
+     * @param cartRequest  장바구니 수정 요청 데이터
+     * @param token        사용자 인증 토큰
+     * @param request      로그인 상태가 아닌 경우 쿠키에서 수정하기 위해 가져옴
+     * @param response     로그인 상태가 아닌 경우 쿠키에서 수정하기 위해 가져옴
+     * @return 수정된 장바구니 아이템 정보
      */
     public EditToCartDto.Response editCartItem(
             Long itemId,
@@ -130,6 +149,12 @@ public class CartService {
 
     /**
      * 장바구니에서 아이템을 삭제합니다.
+     *
+     * @param itemId   삭제할 아이템의 ID
+     * @param token    사용자 인증 토큰
+     * @param request  로그인 상태가 아닌 경우 쿠키에서 삭제하기 위해 가져옴
+     * @param response 로그인 상태가 아닌 경우 쿠키에서 삭제하기 위해 가져옴
+     * @return 삭제된 아이템 ID
      */
     public Long deleteCartItem(
             Long itemId,
@@ -153,6 +178,10 @@ public class CartService {
 
     /**
      * 쿠키에 장바구니 아이템을 추가합니다.
+     *
+     * @param request      로그인 상태가 아닌 경우 쿠키에서 가져오기 위해 사용
+     * @param response     로그인 상태가 아닌 경우 쿠키에 추가하기 위해 사용
+     * @param cartDtoResponse  추가할 장바구니 아이템 정보
      */
     private void addCartInCookie(
             HttpServletRequest request,
@@ -208,6 +237,11 @@ public class CartService {
 
     /**
      * Redis에 장바구니 아이템을 추가합니다.
+     *
+     * @param request      로그인 상태 이므로 쿠키에 있을경우 레디스로 옮기고 쿠키 삭제함
+     * @param response     로그인 상태 이므로 쿠키에 있을경우 레디스로 옮기고 쿠키 삭제함
+     * @param loginId      사용자 로그인 ID
+     * @param cartDtoResponse  추가할 장바구니 아이템 정보
      */
     private void addCartInRedis(HttpServletRequest request, HttpServletResponse response, String loginId, AddToCartDto.Response cartDtoResponse) {
         String prevCart = getEncodedCartItemsFromCookie(request);
@@ -255,6 +289,9 @@ public class CartService {
 
     /**
      * 쿠키에서 장바구니 정보를 가져옵니다.
+     *
+     * @param request 클라이언트 요청 객체
+     * @return 쿠키에 저장된 장바구니 정보 (없으면 null)
      */
     private Set<AddToCartDto.Response> getCartFromCookie(HttpServletRequest request) {
         String encodedCartItems = getEncodedCartItemsFromCookie(request);
@@ -273,6 +310,11 @@ public class CartService {
 
     /**
      * Redis에서 장바구니 정보를 가져옵니다.
+     *
+     * @param loginId 사용자의 로그인 ID
+     * @param request 로그인 상태이므로 쿠키에 장바구니 정보 있을경우 레디스로 가져오고 반환
+     * @param response 로그인 상태이므로 쿠키에 장바구니 정보 있을경우 레디스로 가져오고 반환
+     * @return Redis에 저장된 장바구니 정보
      */
     private Set<AddToCartDto.Response> getCartFromRedis(String loginId, HttpServletRequest request, HttpServletResponse response) {
         Set<AddToCartDto.Response> addToCartDtoFromCookie = getCartFromCookie(request);
@@ -292,6 +334,11 @@ public class CartService {
 
     /**
      * 쿠키에서 장바구니 정보를 수정합니다.
+     *
+     * @param request 쿠키를 수정하기 위한 객체
+     * @param response 쿠키를 수정하기 위한 객체
+     * @param cartDtoResponse 수정할 장바구니 아이템 정보
+     * @return 수정이 성공했으면 true, 실패하면 false
      */
     private boolean updateCartInCookie(
             HttpServletRequest request,
@@ -332,6 +379,10 @@ public class CartService {
 
     /**
      * Redis에서 장바구니 정보를 수정합니다.
+     *
+     * @param loginId 사용자의 로그인 ID
+     * @param cartDtoResponse 수정할 장바구니 아이템 정보
+     * @return 수정이 성공했으면 true, 실패하면 false
      */
     private boolean updateCartInRedis(
             String loginId,
@@ -363,6 +414,11 @@ public class CartService {
 
     /**
      * 쿠키에서 장바구니 아이템을 삭제합니다.
+     *
+     * @param request 장바구니에 있는 쿠키 삭제하기 위한 객체
+     * @param response 장바구니에 있는 쿠키 삭제하기 위한 객체
+     * @param itemId 삭제할 아이템의 ID
+     * @return 삭제 성공 여부
      */
     private boolean deleteCartFromCookie(HttpServletRequest request, HttpServletResponse response, Long itemId) {
         Set<AddToCartDto.Response> cartDtoSetFromCookie = getCartFromCookie(request);
@@ -406,6 +462,10 @@ public class CartService {
 
     /**
      * Redis에서 장바구니 아이템을 삭제합니다.
+     *
+     * @param loginId 사용자의 로그인 ID
+     * @param itemId 삭제할 아이템의 ID
+     * @return 삭제 성공 여부
      */
     private boolean deleteCartFromRedis(String loginId, Long itemId) {
         HashOperations<String, String, Set<AddToCartDto.Response>> hashOperations = redisTemplate.opsForHash();
@@ -431,6 +491,9 @@ public class CartService {
 
     /**
      * 쿠키에서 장바구니 암호화된 값을 가져옵니다.
+     *
+     * @param request 클라이언트 요청 객체
+     * @return 쿠키에 저장된 암호화된 장바구니 값 (없으면 null)
      */
     private String getEncodedCartItemsFromCookie(HttpServletRequest request) {
         String cookieValue = null;
@@ -450,6 +513,9 @@ public class CartService {
 
     /**
      * JWT 토큰에서 로그인 ID를 추출합니다.
+     *
+     * @param token JWT 토큰
+     * @return 토큰에서 추출한 로그인 ID
      */
     private String getLoginId(String token) {
         return token == null ? null : jwtUtil.extractLoginIdFromToken(token);
@@ -457,6 +523,10 @@ public class CartService {
 
     /**
      * 주어진 아이템 ID에 해당하는 아이템이 존재하는지 확인합니다.
+     *
+     * @param itemId 확인할 아이템의 ID
+     * @return 존재하는 아이템 객체
+     * @throws ItemException 아이템이 존재하지 않으면 예외 발생
      */
     private Item getItemIfExist(Long itemId) {
         return itemRepository.findById(itemId)
